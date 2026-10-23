@@ -6,7 +6,7 @@ import { actorCan, type StaffActor } from "@/lib/auth/guards";
 import { buildBriefing, greetingFor } from "./briefing";
 import type { BuddySnapshot } from "./buddy-snapshot";
 import { ACTION_PERMISSION, BUDDY_ACTION_KINDS, NEVER_BUDDY_ACTIONS, PrepareRequestSchema } from "./buddy-actions";
-import { NOT_IN_ROLE, buildAssistantSystemPrompt, ruleBasedProvider, type AssistantContext } from "./llm-provider";
+import { NOT_IN_ROLE, NO_FORECAST, buildAssistantSystemPrompt, ruleBasedProvider, type AssistantContext } from "./llm-provider";
 
 /** Pure rules of the Business Buddy — what each role is told and offered. */
 
@@ -137,4 +137,64 @@ test("chat (model prompt): withheld areas are absent and named as withheld; the 
   });
   assert.match(full, /Thandi \(9\)/);
   assert.doesNotMatch(full, /role does not include/);
+});
+
+// ---------------------------------------------------------------------------
+// Chat: the cash-flow forecast, answered by the rules path
+// ---------------------------------------------------------------------------
+
+const forecastContext: AssistantContext = {
+  businessName: "Kota Tainment",
+  briefing: ["2 orders to prepare."],
+  forecast: {
+    nextWeek: "R 2 800.00",
+    fourWeeks: "R 11 200.00",
+    lines: ["Next week looks like about R 2 800.00.", "Saturday is your big day, averaging R 720.00."],
+  },
+};
+
+test("chat (rules): a forecast question is answered with the forecast, not this week's orders", async () => {
+  for (const question of [
+    "what does next week look like?",
+    "what is my cash flow forecast?",
+    "how much will I make next month?",
+    "which is my busiest day?",
+    "what are my slow days?",
+  ]) {
+    assert.equal(
+      await ruleBasedProvider.answer(question, forecastContext),
+      forecastContext.forecast!.lines.join(" "),
+      question,
+    );
+  }
+});
+
+test("chat (rules): without the plan or the permission, the forecast answer explains both, and no figure leaks", async () => {
+  assert.equal(await ruleBasedProvider.answer("what does next week look like?", restrictedContext), NO_FORECAST);
+  assert.doesNotMatch(NO_FORECAST, /R \d/);
+});
+
+test("chat (rules): the forecast case leaves the other cases exactly as they were", async () => {
+  // "today" and a bare "next" still reach the briefing; sales still reach the
+  // orders case rather than being swallowed by the forecast pattern.
+  assert.equal(await ruleBasedProvider.answer("what needs attention today?", forecastContext), "2 orders to prepare.");
+  assert.equal(await ruleBasedProvider.answer("what's next?", forecastContext), "2 orders to prepare.");
+  assert.equal(
+    await ruleBasedProvider.answer("how much money did we make?", { ...forecastContext, ordersThisWeek: { count: 5, total: "R 500.00" } }),
+    "This week: 5 orders, totalling R 500.00.",
+  );
+});
+
+test("chat (rules): the help line offers the forecast only when the person has one", async () => {
+  const offered = await ruleBasedProvider.answer("tell me a joke", forecastContext);
+  assert.match(offered, /what the next four weeks look like/);
+  const withheld = await ruleBasedProvider.answer("tell me a joke", restrictedContext);
+  assert.doesNotMatch(withheld, /next four weeks/);
+});
+
+test("chat (model prompt): the forecast is handed over as figures the model may not rework", () => {
+  const prompt = buildAssistantSystemPrompt(forecastContext);
+  assert.match(prompt, /next week about R 2 800\.00, the next four weeks about R 11 200\.00/);
+  assert.match(prompt, /quote these figures, never your own/);
+  assert.doesNotMatch(buildAssistantSystemPrompt(restrictedContext), /Cash-flow forecast/);
 });

@@ -1,0 +1,193 @@
+/* Dashboard > Analytics > Forecast > Win-back. A phone-first action list: one
+ * card per customer, the badge and the WhatsApp link both reachable with a
+ * thumb, and nothing that needs a wide screen to make sense. Tokens follow the
+ * Analytics pages next door. */
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.lede {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 16px;
+}
+
+.breadcrumb {
+  font-size: var(--text-xs);
+  margin: 14px 0 18px;
+}
+
+.blocked {
+  padding: 20px;
+  color: var(--dust);
+}
+
+/* --- Counts -------------------------------------------------------------- */
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.statTile {
+  padding: 16px 18px;
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--amber);
+  margin: 0 0 4px;
+}
+
+.statLabel {
+  color: var(--dust);
+  font-size: var(--text-xs);
+}
+
+/* --- Nobody slipping ----------------------------------------------------- */
+
+.allWell {
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--veld);
+}
+
+.allWellTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 4px;
+}
+
+.allWellBody {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+/* --- One customer -------------------------------------------------------- */
+
+.list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.customer {
+  padding: 16px 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.customerHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.customerName {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 2px;
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--dust);
+  margin-left: 6px;
+}
+
+.customerMeta {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  white-space: nowrap;
+}
+
+/* Slipping is the winnable one, so it carries the attention colour; gone is
+ * deliberately quiet — it is the least worth an owner's ten minutes. */
+.slipping {
+  color: var(--amber);
+  border-color: color-mix(in srgb, var(--amber) 60%, transparent);
+}
+
+.overdue {
+  color: var(--chalk);
+}
+
+.gone {
+  color: var(--dust);
+}
+
+.action {
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.whatsapp {
+  justify-self: start;
+  font-size: var(--text-sm);
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--veld) 70%, transparent);
+  color: var(--chalk);
+  text-decoration: none;
+  /* Comfortable thumb target on a phone. */
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.contactNote {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+/* --- Method -------------------------------------------------------------- */
+
+.methodCard {
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.methodTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 8px;
+}
+
+.methodList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.hint {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin-top: 10px;
+}

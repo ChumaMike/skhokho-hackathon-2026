@@ -1,0 +1,287 @@
+/* Dashboard > Analytics > Forecast. Mobile-first: the stat tiles and the
+ * chart reflow to one phone-width column, and the day-by-day table scrolls
+ * sideways rather than squeezing eight columns onto a small screen. Tokens and
+ * class names follow the Analytics overview next door. */
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.lede {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 16px;
+}
+
+.breadcrumb {
+  font-size: var(--text-xs);
+  margin: 14px 0 18px;
+}
+
+.upgrade {
+  padding: 20px;
+  color: var(--dust);
+}
+
+/* --- Stat tiles ---------------------------------------------------------- */
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.statTile {
+  padding: 18px;
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--amber);
+  margin: 0 0 4px;
+}
+
+.statLabel {
+  color: var(--dust);
+  font-size: var(--text-xs);
+}
+
+/* --- What the Business Buddy says ---------------------------------------- */
+
+.buddyCard {
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--amber);
+}
+
+.buddyTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 8px;
+}
+
+.buddyList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.buddyLine {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+/* --- Bars: hand-rolled, no charting library ------------------------------ */
+
+.chartCard {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.chartHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.chartTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+}
+
+.chartHint {
+  color: var(--dust);
+  font-size: var(--text-xs);
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 160px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 6px;
+  min-width: 0;
+}
+
+.barValue {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+.bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(var(--veld), color-mix(in srgb, var(--veld) 55%, var(--edge)));
+  min-height: 3px;
+}
+
+/* Outlined, not filled: a forecast week should not look as solid as a week
+ * that actually happened. */
+.barForecast {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--amber) 32%, transparent),
+    color-mix(in srgb, var(--amber) 32%, transparent) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  border: 1px solid color-mix(in srgb, var(--amber) 70%, transparent);
+}
+
+.barLabel {
+  font-size: 10px;
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+/* --- Day-by-day table ---------------------------------------------------- */
+
+.tableWrap {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.caption {
+  text-align: left;
+  color: var(--dust);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 8px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--edge);
+  white-space: nowrap;
+}
+
+.table thead th {
+  color: var(--dust);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table tbody th {
+  color: var(--chalk);
+  font-weight: 600;
+}
+
+.weekTotal {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.slowCell {
+  color: var(--dust);
+}
+
+.slowTag {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dust);
+}
+
+/* --- Method -------------------------------------------------------------- */
+
+.methodCard {
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.methodTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 8px;
+}
+
+.methodList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.hint {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin-top: 10px;
+}
+
+/* --- Link through to the printable funding report (GROW and PRO) --------- */
+
+.reportLink {
+  display: grid;
+  gap: 4px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  border-left: 3px solid var(--veld);
+}
+
+.reportLinkTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--chalk);
+}
+
+.reportLinkBody {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+/* --- What the longer history adds, for a business without it ------------- */
+
+.summaryCard {
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--edge);
+}
+
+.summaryTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 8px;
+}
+
+.summaryList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--dust);
+  font-size: var(--text-sm);
+}

@@ -31,9 +31,24 @@ export interface AssistantContext {
   upcomingAppointments?: { customerName: string; serviceName: string; startTime: Date }[]
   /** Today's briefing lines (already permission-scoped). */
   briefing: string[]
+  /**
+   * Cash-flow forecast: the next four weeks, already turned into sentences by
+   * `@/modules/analytics/forecast-advice`. Present only when the asking person
+   * may view analytics AND the plan includes the sales overview. Business
+   * figures only — no customer appears in it.
+   */
+  forecast?: { nextWeek: string; fourWeeks: string; lines: string[] }
 }
 
 export const NOT_IN_ROLE = (what: string) => `Your role doesn't include ${what} — ask the business owner if you need it.`
+
+/**
+ * A forecast needs the plan (sales overview) AND the permission, so one answer
+ * covers both rather than guessing which is missing and telling someone
+ * something untrue about their own account.
+ */
+export const NO_FORECAST =
+  "I can't work out a forecast for you — that needs the sales overview on your plan and permission to view analytics. The business owner can check both."
 
 export type AssistantSource = 'rules' | 'model'
 
@@ -58,6 +73,16 @@ export const ruleBasedProvider: AssistantProvider = {
   source: 'rules',
   async answer(question, ctx) {
     const q = question.toLowerCase()
+
+    // Cash-flow forecast. This sits FIRST on purpose: the briefing case below
+    // matches a bare "next", so "what does next week look like?" would never
+    // reach a forecast case appended at the end. The pattern is narrow enough
+    // ("next week", not "next") to leave the other cases exactly as they were.
+    if (/forecast|cash.?flow|next (week|month|four weeks)|coming (weeks|month)|predict|how much will|busiest day|slow(est)? days?/.test(q)) {
+      const f = ctx.forecast
+      if (!f) return NO_FORECAST
+      return f.lines.join(' ')
+    }
 
     if (/attention|today|next|should i|what.?s (up|happening)|briefing|summary|how are we/.test(q)) {
       return ctx.briefing.length > 0 ? ctx.briefing.join(' ') : `Nothing needs you right now.`
@@ -106,7 +131,7 @@ export const ruleBasedProvider: AssistantProvider = {
       return `Coming up: ${list}.`
     }
 
-    return `I can tell you what needs attention today${ctx.customers ? ', who your regulars are and who has lapsed' : ''}${ctx.ordersThisWeek ? ", this week's orders" : ''}${ctx.upcomingAppointments ? ' and upcoming bookings' : ''} — try asking one of those. (Answered from your own data by built-in rules — no outside AI service sees it.)`
+    return `I can tell you what needs attention today${ctx.customers ? ', who your regulars are and who has lapsed' : ''}${ctx.ordersThisWeek ? ", this week's orders" : ''}${ctx.forecast ? ' and what the next four weeks look like' : ''}${ctx.upcomingAppointments ? ' and upcoming bookings' : ''} — try asking one of those. (Answered from your own data by built-in rules — no outside AI service sees it.)`
   },
 }
 
@@ -129,6 +154,11 @@ export function buildAssistantSystemPrompt(ctx: AssistantContext): string {
     ctx.customers ? `Top regulars by stamps: ${ctx.customers.regulars.map((m) => `${m.name} (${m.stamps})`).join(', ') || 'none yet'}` : null,
     ctx.customers ? `Lapsed 30+ days: ${ctx.customers.lapsed.map((m) => m.name).join(', ') || 'none'}` : null,
     ctx.ordersThisWeek ? `This week's orders: ${ctx.ordersThisWeek.count}, totalling ${ctx.ordersThisWeek.total}` : null,
+    // The forecast is already worked out and worded by the rules path; the
+    // model may repeat it but must never produce a different number.
+    ctx.forecast
+      ? `Cash-flow forecast (worked out from this business's own paid orders — quote these figures, never your own): next week about ${ctx.forecast.nextWeek}, the next four weeks about ${ctx.forecast.fourWeeks}. ${ctx.forecast.lines.join(' ')}`
+      : null,
     ctx.upcomingAppointments
       ? `Upcoming bookings: ${ctx.upcomingAppointments.map((a) => `${a.customerName} — ${a.serviceName} (${formatWhen(a.startTime)})`).join('; ') || 'none'}`
       : null,

@@ -1,0 +1,236 @@
+/*
+ * The funding-readiness one-pager.
+ *
+ * Deliberately light-on-white rather than the console's dark palette, exactly
+ * as the printable invoice is: this is a document an owner prints or saves as
+ * PDF for a lender, and a dark page wastes a cartridge and reads badly on
+ * paper. The literal colours here are therefore intentional — this surface is
+ * paper, not chrome, and must look the same in either theme.
+ *
+ * It must also fit ONE printed page (A4), which is why the figures are a
+ * six-cell grid rather than six cards, and why the print rules below tighten
+ * the type and drop the screen-only chrome.
+ */
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #ffffff;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+.noPrint {
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+.noPrint a {
+  color: #1a1a1a;
+}
+
+.printHint {
+  color: #555555;
+  margin: 6px 0 0;
+}
+
+/* Screen-only blocked state, inside the normal dark console shell. */
+.blockedTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.blocked {
+  padding: 20px;
+  color: var(--dust);
+}
+
+.doc {
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  padding: 28px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.4rem;
+  margin: 0 0 4px;
+}
+
+.business {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.headMeta {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #555555;
+}
+
+.headMeta p {
+  margin: 0 0 2px;
+}
+
+/* --- The six figures ----------------------------------------------------- */
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: #dddddd;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+.figure {
+  background: #ffffff;
+  padding: 12px 14px;
+}
+
+.figureLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555555;
+  margin: 0 0 4px;
+}
+
+.figureValue {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.figureNote {
+  font-size: 0.72rem;
+  color: #555555;
+  margin: 0;
+}
+
+/* --- Blocks -------------------------------------------------------------- */
+
+.block {
+  margin-bottom: 20px;
+}
+
+.blockTitle {
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #dddddd;
+}
+
+.lead {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.note {
+  font-size: 0.8rem;
+  color: #555555;
+  margin: 8px 0 0;
+}
+
+.noteList,
+.formulaList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+
+.formulaList {
+  font-size: 0.82rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555555;
+  border-bottom: 1px solid #dddddd;
+}
+
+.table tbody th {
+  font-weight: 600;
+}
+
+.tag {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555555;
+}
+
+.foot {
+  border-top: 1px solid #dddddd;
+  padding-top: 12px;
+  font-size: 0.72rem;
+  color: #555555;
+}
+
+.foot p {
+  margin: 0;
+}
+
+@media print {
+  .noPrint {
+    display: none;
+  }
+
+  .page {
+    padding: 0;
+    min-height: 0;
+  }
+
+  .doc {
+    border: none;
+    padding: 0;
+  }
+
+  /* Tighter on paper so the whole report lands on one A4 side. */
+  .figures {
+    margin-bottom: 14px;
+  }
+
+  .block {
+    margin-bottom: 14px;
+    break-inside: avoid;
+  }
+
+  .table th,
+  .table td {
+    padding: 4px 8px;
+  }
+}

@@ -170,3 +170,27 @@
   display: grid;
   gap: 6px;
 }
+
+/* ---------------------------------------------------------------------------
+ * Link through to the cash-flow forecast (Analytics > Forecast).
+ * ------------------------------------------------------------------------- */
+
+.forecastLink {
+  display: grid;
+  gap: 4px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  border-left: 3px solid var(--amber);
+}
+
+.forecastLinkTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--chalk);
+}
+
+.forecastLinkBody {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}

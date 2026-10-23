@@ -17,7 +17,10 @@ import { listUpcomingAppointments } from '@/modules/appointments/appointment.ser
 import { formatZAR } from '@/lib/utils'
 import { answerWithFallback, answerWithTools, externalAssistantEnabled, ruleBasedProvider, type AssistantContext, type AssistantSource } from './llm-provider'
 import { getBusinessEntitlements } from '@/modules/billing/subscription.service'
-import { hasFeature } from '@/modules/billing/entitlements'
+import { hasFeature, type Entitlements } from '@/modules/billing/entitlements'
+import { getSalesForecast } from '@/modules/analytics/forecast.service'
+import { explainForecast } from '@/modules/analytics/forecast-advice'
+import { forecastAccess } from '@/modules/analytics/forecast-access'
 import { detectContentIntent, runTool, toolDefinitions, ToolRefusedError } from './tools'
 import { AiCallError } from '@/lib/ai/anthropic'
 import { gatherBuddySnapshot } from './buddy-snapshot'
@@ -25,20 +28,35 @@ import { buildBriefing } from './briefing'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
-/** The context one person may be answered from. Exported for tests. */
-export async function buildAssistantContext(actor: StaffActor, now: Date = new Date()): Promise<AssistantContext> {
+/**
+ * The context one person may be answered from. Exported for tests.
+ *
+ * `entitlements` is optional because the forecast is the one area that needs
+ * the PLAN as well as the permission; without it the buddy simply has no
+ * forecast to offer, which is the honest answer for a plan that doesn't
+ * include the sales overview.
+ */
+export async function buildAssistantContext(
+  actor: StaffActor,
+  now: Date = new Date(),
+  entitlements?: Entitlements,
+): Promise<AssistantContext> {
   const businessId = actor.tenantId
   const canCustomers = actorCan(actor, ['canManageCustomers', 'canIssueLoyalty'])
   const canOrders = actorCan(actor, 'canManageOrders')
   const canBookings = actorCan(actor, ['canReadBookings', 'canManageBookings'])
+  // Same decision the three forecast pages make, from the same module, so the
+  // buddy can never offer a forecast a page would withhold (or the reverse).
+  const canForecast = entitlements !== undefined && forecastAccess({ permissions: actor.permissions, entitlements }).forecast
 
-  const [snapshot, members, regulars, lapsed, orders, upcoming] = await Promise.all([
+  const [snapshot, members, regulars, lapsed, orders, upcoming, forecast] = await Promise.all([
     gatherBuddySnapshot(actor, now),
     canCustomers ? listMembers(businessId, { limit: 500 }) : null,
     canCustomers ? getRegulars(businessId, 5) : null,
     canCustomers ? getLapsed(businessId, 30) : null,
     canOrders ? listOrders(businessId, { dateFrom: new Date(now.getTime() - WEEK_MS), perPage: 100 }) : null,
     canBookings ? listUpcomingAppointments(businessId, { limit: 10 }) : null,
+    canForecast ? getSalesForecast(businessId, { today: now }) : null,
   ])
 
   const briefing = buildBriefing(snapshot, actor)
@@ -64,6 +82,13 @@ export async function buildAssistantContext(actor: StaffActor, now: Date = new D
           serviceName: a.service?.name ?? 'a service',
           startTime: a.startTime,
         }))
+      : undefined,
+    forecast: forecast
+      ? {
+          nextWeek: forecast.weeks[0]?.display ?? forecast.totalDisplay,
+          fourWeeks: forecast.totalDisplay,
+          lines: explainForecast(forecast),
+        }
       : undefined,
   }
 }
@@ -96,7 +121,7 @@ export async function askAssistant(actor: StaffActor, question: string, now: Dat
     }
   }
 
-  const context = await buildAssistantContext(actor, now)
+  const context = await buildAssistantContext(actor, now, entitlements)
   if (offerTools && externalAssistantEnabled()) {
     try {
       const { text, toolUse } = await answerWithTools(question, context, toolDefinitions())

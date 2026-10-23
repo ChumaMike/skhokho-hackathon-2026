@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireOwnerSession, getStaffWorkspaceContext } from "../session";
 import { requireStaffPermission } from "@/lib/auth/guards";
 import { getBusinessEntitlements } from "@/modules/billing/subscription.service";
@@ -52,6 +53,16 @@ export default async function AnalyticsPage() {
           </div>
         ) : (
           <>
+            {/* Cash-flow forecast lives one level down, under Analytics, rather
+             * than as its own nav section: it reads the same orders this page
+             * does and belongs next to them. */}
+            <Link href="/dashboard/analytics/forecast" className={`card ${styles.forecastLink}`}>
+              <span className={styles.forecastLinkTitle}>Cash-flow forecast &rarr;</span>
+              <span className={styles.forecastLinkBody}>
+                What your next four weeks look like, your busiest and slowest days, and a one-page funding report you can
+                print.
+              </span>
+            </Link>
             <WeeklyOverview businessId={session.tenantId} weeks={weeks} />
             <StorefrontInsightsCard businessId={session.tenantId} />
           </>
