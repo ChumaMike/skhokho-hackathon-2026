@@ -1,0 +1,80 @@
+/* Share button — the round icon on cards and menu rows, the labelled button on the product page. */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--shop-border, #e2d9c8);
+  background: transparent;
+  color: var(--shop-fg, #1b1510);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.icon:hover,
+.icon:focus-visible {
+  background: var(--shop-board, #1b1510);
+  color: var(--shop-cream, #fffdf8);
+  outline: none;
+}
+
+.button {
+  border: 1px solid var(--shop-border, #e2d9c8);
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-weight: 800;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--shop-fg, #1b1510);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: var(--shop-board, #1b1510);
+  color: var(--shop-cream, #fffdf8);
+  outline: none;
+}
+
+/* "Link copied" pops above the button; empty most of the time, never takes space. */
+.status {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--shop-cream, #fffdf8);
+  background: var(--shop-board, #1b1510);
+  border-radius: 8px;
+  padding: 5px 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.status:empty {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .icon {
+    width: 44px;
+    height: 44px;
+  }
+}

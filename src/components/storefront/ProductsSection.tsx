@@ -8,6 +8,7 @@ import { MAX_LINE_QUANTITY } from "@/lib/storefront/cart";
 import viewStyles from "@/components/StorefrontView.module.css";
 import styles from "./ProductsSection.module.css";
 import { groupByCategory } from "@/lib/storefront/catalog-groups";
+import ShareButton from "@/components/storefront/share/ShareButton";
 
 export interface StorefrontProduct {
   id: string;
@@ -20,6 +21,8 @@ export interface StorefrontProduct {
   categoryName: string | null;
   /** §10 — when true, "Add" opens the configurator instead of adding one unit directly. */
   hasOptions: boolean;
+  /** Social products (Tab 7): the merchant's hashtags, bare and lower case (lib/storefront/share.ts). Absent on older callers. */
+  hashtags?: string[];
 }
 
 
@@ -100,6 +103,9 @@ export default function ProductsSection({
                     </div>
                     <div className={styles.productFooter}>
                       <span className={styles.productPrice}>{formatZAR(product.price)}</span>
+                      <span className={styles.productActions}>
+                      {/* Social products (Tab 7): the same share as the Shopfront cards, so every live design shares alike. */}
+                      <ShareButton product={product} />
                       {ordersEnabled &&
                         (product.hasOptions ? (
                           <Link
@@ -117,6 +123,7 @@ export default function ProductsSection({
                             onRemove={() => cart.removeLine(product.id)}
                           />
                         ))}
+                      </span>
                     </div>
                   </div>
                 </li>

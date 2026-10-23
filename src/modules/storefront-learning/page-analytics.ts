@@ -38,10 +38,19 @@ export interface PageAnalyticsRow {
   phoneShare: number | null
 }
 
+export interface MostSharedProduct {
+  id: string
+  name: string
+  /** All-time completed shares (Product.shareCount) — the plain number the merchant can quote. */
+  shareCount: number
+}
+
 export interface PageAnalytics {
   days: PageAnalyticsWindow
-  totals: { views: number; primaryTaps: number; enquiries: number; orders: number; bookings: number; phoneShare: number | null }
+  totals: { views: number; primaryTaps: number; enquiries: number; orders: number; bookings: number; phoneShare: number | null; shares: number }
   pages: PageAnalyticsRow[]
+  /** Social products (Tab 7): products by all-time shares, most first; empty until something was shared. */
+  mostShared: MostSharedProduct[]
   /** Views on pages that no longer exist in the page model (renamed or deleted), kept honest rather than dropped. */
   otherViews: number
 }
@@ -55,7 +64,7 @@ function share(phone: number, known: number): number | null {
 }
 
 /** Pure: counters → one row per page in the owner's order, plus totals. */
-export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveIds: ReadonlySet<string>, basePath: string, days: PageAnalyticsWindow): PageAnalytics {
+export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveIds: ReadonlySet<string>, basePath: string, days: PageAnalyticsWindow, mostShared: MostSharedProduct[] = []): PageAnalytics {
   const byPage = new Map<string, { views: number; taps: number; enquiries: number; phone: number; known: number }>()
   const bump = (key: string) => {
     let entry = byPage.get(key)
@@ -67,6 +76,7 @@ export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveI
   }
   let orders = 0
   let bookings = 0
+  let shares = 0
   for (const r of rows) {
     const entry = bump(r.page)
     switch (r.event) {
@@ -90,6 +100,9 @@ export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveI
       case 'BOOKING_SUBMITTED':
         bookings += r.count
         break
+      case 'PRODUCT_SHARE':
+        shares += r.count
+        break
     }
   }
 
@@ -106,6 +119,12 @@ export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveI
     seen.add('PRODUCT')
     result.push({ id: 'PRODUCT', title: 'Product pages', path: `${basePath}/product/…`, live: true, views: product.views, primaryTaps: product.taps, enquiries: product.enquiries, phoneShare: share(product.phone, product.known) })
   }
+  // Hashtag pages (Tab 7) likewise: one line for all of them.
+  const tag = byPage.get('TAG')
+  if (tag && tag.views > 0) {
+    seen.add('TAG')
+    result.push({ id: 'TAG', title: 'Hashtag pages', path: `${basePath}/tag/…`, live: true, views: tag.views, primaryTaps: tag.taps, enquiries: tag.enquiries, phoneShare: share(tag.phone, tag.known) })
+  }
   let otherViews = 0
   for (const [key, e] of byPage) if (!seen.has(key) && !['BASKET', 'CHECKOUT', 'CONFIGURE'].includes(key)) otherViews += e.views
 
@@ -121,8 +140,10 @@ export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveI
       orders,
       bookings,
       phoneShare: share(totalPhone, totalKnown),
+      shares,
     },
     pages: result,
+    mostShared,
     otherViews,
   }
 }
@@ -130,13 +151,15 @@ export function buildPageAnalytics(rows: PageStatRow[], pages: SitePage[], liveI
 /** The merchant's page analytics for the last `days` days. Scoped to their business only. */
 export async function getPageAnalytics(businessId: string, days: PageAnalyticsWindow = 30, now: Date = new Date()): Promise<PageAnalytics> {
   const since = new Date(storefrontDay(now).getTime() - (days - 1) * 24 * 60 * 60 * 1000)
-  const [grouped, business] = await Promise.all([
+  const [grouped, business, mostShared] = await Promise.all([
     prisma.storefrontDailyStat.groupBy({ by: ['event', 'page', 'device'], where: { businessId, day: { gte: since } }, _sum: { count: true } }),
     prisma.business.findUniqueOrThrow({ where: { id: businessId } }),
+    // All-time, this shop only; five is enough for a merchant to act on.
+    prisma.product.findMany({ where: { businessId, shareCount: { gt: 0 } }, orderBy: [{ shareCount: 'desc' }, { name: 'asc' }], take: 5, select: { id: true, name: true, shareCount: true } }),
   ])
   const basePath = `/store/${business.slug}`
   const site = await loadSite(business, basePath)
   const live = new Set(site.pages.filter((p) => p.visible && (site.nav.some((i) => i.id === p.id) || site.footer.some((i) => i.id === p.id) || p.kind === 'HOME')).map((p) => p.id))
   const rows: PageStatRow[] = grouped.map((g) => ({ event: g.event, page: g.page, device: g.device, count: g._sum.count ?? 0 }))
-  return buildPageAnalytics(rows, site.pages, live, basePath, days)
+  return buildPageAnalytics(rows, site.pages, live, basePath, days, mostShared)
 }

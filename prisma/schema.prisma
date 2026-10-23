@@ -910,6 +910,13 @@ model Product {
   /// instant (end of the trading day in SAST). Null = available. Distinct
   /// from isActive (hide), which removes it from the storefront altogether.
   soldOutUntil DateTime? @map("sold_out_until")
+  /// Tab 7 (social products, feature/social-share) — the merchant's hashtags,
+  /// up to eight, stored bare and lower case by lib/storefront/share.ts. Shown
+  /// on the product page, carried in shares, the key of /tag/<tag> per shop.
+  hashtags     String[]  @default([])
+  /// Tab 7 (social products) — completed shares of this product, counted
+  /// server side by /api/store/share. A number, never who shared it.
+  shareCount   Int       @default(0) @map("share_count")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1903,6 +1910,8 @@ enum StorefrontEventType {
   ENQUIRY_CLICK
   /// Recorded server-side when a quote, enquiry, pickup or callback request is saved (Tab 7).
   LEAD_SUBMITTED
+  /// Recorded server-side when a share of a product completed (Tab 7, social products).
+  PRODUCT_SHARE
 }
 
 /// One counter: how many times `event` happened on this day, for this

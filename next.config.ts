@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { securityHeaders } from "./src/lib/security-headers";
+import { SERVER_ACTION_BODY_LIMIT } from "./src/lib/upload-limits";
 
 // ---- Tab 5 ----
 // CSP, HSTS and Permissions-Policy are built in src/lib/security-headers.ts
@@ -13,6 +14,15 @@ const tab5PreviewHeaders = securityHeaders({ dev: isDev, frameAncestors: "self" 
 // ---- end Tab 5 ----
 
 const nextConfig: NextConfig = {
+  // ---- Tab 5 ----
+  // Server Action forms carry images (business logo, item photos). Next's
+  // default body limit is 1 MB — smaller than a phone photo — and a form
+  // over it fails with a bare 413 error page after the whole upload has
+  // crawled in (the 2026-10-21 settings incident). Raised to just under
+  // Vercel's 4.5 MB cap; the forms refuse bigger files before sending
+  // (src/lib/upload-limits.ts, unit-tested against this value).
+  experimental: { serverActions: { bodySizeLimit: SERVER_ACTION_BODY_LIMIT } },
+  // ---- end Tab 5 ----
   async headers() {
     return [
       {

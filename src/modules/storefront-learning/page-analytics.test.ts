@@ -57,6 +57,7 @@ test("page analytics: one row per page in the owner's order, taps and enquiries 
   assert.equal(a.pages.at(-1)?.id, "PRODUCT");
   assert.equal(a.pages.at(-1)?.views, 5);
   assert.equal(a.otherViews, 3, "a renamed page's views are reported, not dropped; basket is not");
-  assert.deepEqual(a.totals, { views: 71, primaryTaps: 7, enquiries: 6, orders: 1, bookings: 2, phoneShare: Math.round((47 / 57) * 100) });
+  assert.deepEqual(a.totals, { views: 71, primaryTaps: 7, enquiries: 6, orders: 1, bookings: 2, phoneShare: Math.round((47 / 57) * 100), shares: 0 });
+  assert.deepEqual(a.mostShared, []);
   assert.equal(a.days, 30);
 });

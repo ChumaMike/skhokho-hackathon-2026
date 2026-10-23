@@ -14,6 +14,7 @@ import {
   setServiceActive,
   getActiveProduct,
   getActiveService,
+  getActiveCatalog,
 } from "./catalog.service";
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -61,6 +62,30 @@ test("createProduct defaults isActive:true and createService defaults isActive:t
   const service = await createService(business.id, { name: "Haircut", price: 150 });
   assert.equal(product.isActive, true);
   assert.equal(service.isActive, true);
+});
+
+// ---------------------------------------------------------------------------
+// Social products (Tab 7) — hashtags are stored by one rule and read back
+// ---------------------------------------------------------------------------
+
+test("hashtags are tidied on the way in (bare, lower case, eight max), replaced on update, and read by the storefront", async () => {
+  const business = await makeBusiness("hashtags");
+  const product = await createProduct(business.id, { name: "Kasi Kota", price: 45, hashtags: "#Kota, soweto #kota braai!" });
+  assert.deepEqual(product.hashtags, ["kota", "soweto", "braai"]);
+  const plain = await createProduct(business.id, { name: "Chips", price: 20 });
+  assert.deepEqual(plain.hashtags, [], "no tags typed means none, not null");
+
+  const untouched = await updateProduct(business.id, product.id, { price: 50 });
+  assert.deepEqual(untouched.hashtags, ["kota", "soweto", "braai"], "an update that says nothing about tags leaves them");
+  const replaced = await updateProduct(business.id, product.id, { hashtags: Array.from({ length: 12 }, (_, i) => `t${i}`) });
+  assert.equal(replaced.hashtags.length, 8);
+  const cleared = await updateProduct(business.id, product.id, { hashtags: "" });
+  assert.deepEqual(cleared.hashtags, []);
+
+  await updateProduct(business.id, product.id, { hashtags: "kota" });
+  const catalog = await getActiveCatalog(business.id);
+  assert.deepEqual(catalog.products.find((p) => p.id === product.id)?.hashtags, ["kota"]);
+  assert.deepEqual(catalog.products.find((p) => p.id === plain.id)?.hashtags, []);
 });
 
 // ---------------------------------------------------------------------------

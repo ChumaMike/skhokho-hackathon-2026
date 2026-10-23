@@ -59,6 +59,40 @@
   margin: 0 0 22px;
 }
 
+/* Social products (Tab 7): the merchant's hashtags, each a link to this shop's tag page. */
+.tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--shop-border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--shop-fg);
+}
+
+.tag:hover,
+.tag:focus-visible {
+  background: var(--shop-board);
+  color: var(--shop-cream);
+}
+
+/* Add to basket (or the stepper) and Share on one line; wraps on a narrow phone. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
 .stepper {
   display: inline-flex;
   align-items: center;

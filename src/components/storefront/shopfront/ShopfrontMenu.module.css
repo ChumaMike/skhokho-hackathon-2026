@@ -133,6 +133,12 @@
   white-space: nowrap;
 }
 
+.priceRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Menu rows are tapped one-handed: the shared Add control and its quantity
    buttons get a 44px touch target here, without changing the classic cards. */
 .side button,

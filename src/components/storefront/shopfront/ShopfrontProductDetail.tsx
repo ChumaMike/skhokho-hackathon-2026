@@ -5,6 +5,8 @@ import { formatZAR } from "@/lib/utils";
 import { useCart } from "@/lib/storefront/useCart";
 import { MAX_LINE_QUANTITY } from "@/lib/storefront/cart";
 import type { StorefrontProduct } from "@/components/storefront/ProductsSection";
+import ShareButton from "@/components/storefront/share/ShareButton";
+import { tagPagePath } from "@/lib/storefront/share";
 import shared from "./Shopfront.module.css";
 import styles from "./ShopfrontProductDetail.module.css";
 
@@ -14,11 +16,14 @@ export default function ShopfrontProductDetail({
   businessId,
   basePath,
   ordersEnabled,
+  shareUrl,
 }: {
   product: StorefrontProduct;
   businessId: string;
   basePath: string;
   ordersEnabled: boolean;
+  /** The canonical product address (storefront-url.ts) — what a share carries, whichever host this page was reached on. */
+  shareUrl: string;
 }) {
   const cart = useCart(businessId);
   const quantity = cart.quantityOf(product.id);
@@ -41,7 +46,19 @@ export default function ShopfrontProductDetail({
           <h1 className={styles.name}>{product.name}</h1>
           <div className={styles.price}>{formatZAR(product.price)}</div>
           {product.description && <p className={styles.description}>{product.description}</p>}
+          {product.hashtags && product.hashtags.length > 0 && (
+            <ul className={styles.tags} aria-label="Hashtags">
+              {product.hashtags.map((tag) => (
+                <li key={tag}>
+                  <Link href={`${basePath}${tagPagePath(tag)}`} className={styles.tag}>
+                    #{tag}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
+          <div className={styles.actions}>
           {ordersEnabled &&
             (product.hasOptions ? (
               <Link href={`${basePath}/configure/${product.id}`} className={`${shared.btn} ${shared.btnPrimary}`}>
@@ -73,6 +90,9 @@ export default function ShopfrontProductDetail({
                 Add to basket
               </button>
             ))}
+            {/* Social products (Tab 7): WhatsApp, Instagram, TikTok, Facebook — or copy the link. */}
+            <ShareButton product={product} url={shareUrl} variant="button" />
+          </div>
 
           <p className={styles.helpLine}>
             Need something specific? <Link href={`${basePath}/contact`}>Get in touch</Link>.

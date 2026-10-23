@@ -5,13 +5,14 @@ import { loadSite } from "@/modules/storefront-spec/site";
 import { pageHasContent } from "@/modules/storefront-spec/pages";
 import { canonicalStorefrontUrl } from "@/modules/tenant/storefront-url";
 import { buildSitemapXml, type SitemapEntry } from "@/modules/tenant/storefront-seo";
+import { tagPagePath, uniqueHashtags } from "@/lib/storefront/share";
 
 export const dynamic = "force-dynamic";
 
 /**
  * One sitemap per storefront: home, every page that can open right now
  * (the same rule the nav uses — hidden or empty pages are not listed),
- * and every active product. Addresses are canonical (the business's own
+ * every active product, and every hashtag page (Tab 7). Addresses are canonical (the business's own
  * domain when it has one), whichever host the sitemap was fetched from.
  * On a merchant's host the middleware rewrites /sitemap.xml here.
  */
@@ -31,6 +32,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   }
   for (const product of catalog.products) {
     entries.push({ loc: canonicalStorefrontUrl(business.slug, `/product/${product.id}`, host) });
+  }
+  for (const tag of uniqueHashtags(catalog.products)) {
+    entries.push({ loc: canonicalStorefrontUrl(business.slug, tagPagePath(tag), host) });
   }
 
   return new NextResponse(buildSitemapXml(entries), {

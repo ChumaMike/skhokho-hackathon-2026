@@ -82,6 +82,10 @@ export const RATE_RULES = {
   adminMfaIp: { limit: 20, windowSeconds: 15 * 60 },
   // One request-triggered dispatch tick per window, platform-wide (dispatch.service.ts).
   dispatchTick: { limit: 1, windowSeconds: 5 },
+  // Tab 7 (social products): composing a share card costs CPU; crawlers and share sheets fetch it once per link.
+  shareImageIp: { limit: 60, windowSeconds: 60 },
+  // Tab 7 (social products): one completed share is one call; a script hammering it only inflates its own shop's number.
+  shareCountIp: { limit: 30, windowSeconds: 60 },
 } as const satisfies Record<string, RateRule>
 
 export type RateRuleName = keyof typeof RATE_RULES

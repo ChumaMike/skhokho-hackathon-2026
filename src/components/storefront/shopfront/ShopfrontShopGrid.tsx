@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { StorefrontProduct } from "@/components/storefront/ProductsSection";
+import { PRODUCT_SORT_LABELS, PRODUCT_SORTS, parseProductSort, sortProducts, type ProductSort } from "@/lib/storefront/catalog-sort";
 import ShopfrontProductCard from "./ShopfrontProductCard";
 import ShopfrontStickyBar from "./ShopfrontStickyBar";
 import shared from "./Shopfront.module.css";
@@ -20,6 +21,7 @@ export default function ShopfrontShopGrid({
   ordersEnabled,
   catalogLabel,
   initialCategory,
+  initialSort,
 }: {
   products: StorefrontProduct[];
   businessId: string;
@@ -28,9 +30,12 @@ export default function ShopfrontShopGrid({
   catalogLabel: string;
   /** A collection to start filtered on (from ?collection= — a collection tile on Home links here). */
   initialCategory?: string;
+  /** The price sort to start on (from ?sort=); the control below changes it without a reload. */
+  initialSort?: ProductSort;
 }) {
   const [activeCategory, setActiveCategory] = useState(initialCategory && products.some((p) => p.categoryName === initialCategory) ? initialCategory : "All");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<ProductSort>(parseProductSort(initialSort));
 
   const categories = useMemo(() => {
     const names = new Set<string>();
@@ -38,11 +43,12 @@ export default function ShopfrontShopGrid({
     return ["All", ...names];
   }, [products]);
 
-  const filtered = products.filter(
-    (p) =>
-      (activeCategory === "All" || p.categoryName === activeCategory) &&
-      p.name.toLowerCase().includes(search.toLowerCase()),
+  const filtered = sortProducts(
+    products.filter((p) => (activeCategory === "All" || p.categoryName === activeCategory) && p.name.toLowerCase().includes(search.toLowerCase())),
+    sort,
   );
+  // The toolbar used to appear only with 3+ categories; the sort is useful for any grid of 2+ items.
+  const showToolbar = categories.length > 2 || products.length > 1;
 
   const priceById = new Map(products.map((p) => [p.id, Number(p.price)]));
 
@@ -58,27 +64,40 @@ export default function ShopfrontShopGrid({
     <>
       <section className={shared.section}>
         <div className={shared.container}>
-          {categories.length > 2 && (
+          {showToolbar && (
             <div className={styles.toolbar}>
-              <div className={styles.filters}>
-                {categories.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={`${styles.filter} ${c === activeCategory ? styles.filterActive : ""}`}
-                    onClick={() => setActiveCategory(c)}
-                  >
-                    {c}
-                  </button>
-                ))}
+              {categories.length > 2 && (
+                <div className={styles.filters}>
+                  {categories.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`${styles.filter} ${c === activeCategory ? styles.filterActive : ""}`}
+                      onClick={() => setActiveCategory(c)}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className={styles.tools}>
+                <select className={styles.search} value={sort} onChange={(e) => setSort(parseProductSort(e.target.value))} aria-label="Sort by">
+                  {PRODUCT_SORTS.map((s) => (
+                    <option key={s} value={s}>
+                      {PRODUCT_SORT_LABELS[s]}
+                    </option>
+                  ))}
+                </select>
+                {categories.length > 2 && (
+                  <input
+                    className={styles.search}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={`Search ${catalogLabel.toLowerCase()}…`}
+                    aria-label={`Search ${catalogLabel.toLowerCase()}`}
+                  />
+                )}
               </div>
-              <input
-                className={styles.search}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={`Search ${catalogLabel.toLowerCase()}…`}
-                aria-label={`Search ${catalogLabel.toLowerCase()}`}
-              />
             </div>
           )}
           {filtered.length === 0 ? (

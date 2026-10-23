@@ -74,3 +74,11 @@
     gap: 10px;
   }
 }
+
+/* Sort select + search, side by side; wraps under the category chips on a phone. */
+.tools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}

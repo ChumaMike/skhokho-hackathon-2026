@@ -4,6 +4,7 @@ import type { StorefrontProduct } from "@/components/storefront/ProductsSection"
 import shared from "./Shopfront.module.css";
 import styles from "./ShopfrontProductCard.module.css";
 import ShopfrontAddControl from "./ShopfrontAddControl";
+import ShareButton from "@/components/storefront/share/ShareButton";
 
 /**
  * Same real cart/options contract ProductsSection already uses
@@ -41,7 +42,11 @@ export default function ShopfrontProductCard({
         </Link>
         <div className={styles.row}>
           <span className={styles.price}>{formatZAR(product.price)}</span>
-          {ordersEnabled && <ShopfrontAddControl product={product} businessId={businessId} basePath={basePath} />}
+          <span className={styles.actions}>
+            {/* Social products (Tab 7): one tap to WhatsApp / Instagram / TikTok, or copy the link. */}
+            <ShareButton product={product} />
+            {ordersEnabled && <ShopfrontAddControl product={product} businessId={businessId} basePath={basePath} />}
+          </span>
         </div>
       </div>
     </article>

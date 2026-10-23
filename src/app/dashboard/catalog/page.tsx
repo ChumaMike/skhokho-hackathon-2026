@@ -22,8 +22,10 @@ import {
   NumberField,
   PhotoField,
   AvailabilityNote,
+  HashtagsField,
 } from "@/components/catalog/EditorFields";
 import { formatZAR } from "@/lib/utils";
+import { hashtagLine } from "@/lib/storefront/share";
 import DashboardNav from "@/components/DashboardNav";
 import ActionButton from "@/components/ActionButton";
 import ConfirmActionButton from "@/components/ConfirmActionButton";
@@ -94,16 +96,18 @@ export default async function CatalogPage({
   const productEditor = getProductEditorProfile(experience, workspaceContext.capabilities.has("ORDERS"));
   const serviceEditor = getServiceEditorProfile(experience, workspaceContext.capabilities.has("BOOKINGS"));
 
-  // Food Menu Domain Foundation (Phase 4) §7/§20 — categories and option
-  // groups are fetched (and their UI rendered) ONLY for a Food-experience
-  // business; Retail/Salon/Mechanic never see these fields at all.
-  const [categories, allOptionGroups, assignedGroupIdsByProduct] = experience.supportsMenuOptions
-    ? await Promise.all([
-        listCategoriesForOwner(session.tenantId),
-        listOptionGroupsForOwner(session.tenantId),
-        listAssignedGroupIdsByProduct(session.tenantId, products.map((p) => p.id)),
-      ])
-    : [[], [], new Map<string, string[]>()];
+  // Categories are for ANY business that sells products (Burgers / Drinks,
+  // Snacks / Household, Shirts / Accessories): the Categories page already
+  // lets every merchant create them, so the item form must let every
+  // merchant assign one — the pilot retail shop could not (2026-10-21).
+  // Option groups (size, extras) stay a Food Menu Domain Foundation §7/§20
+  // feature: Retail/Salon/Mechanic never see those fields.
+  const sellsProducts = workspaceContext.capabilities.has("PRODUCTS");
+  const [categories, allOptionGroups, assignedGroupIdsByProduct] = await Promise.all([
+    sellsProducts ? listCategoriesForOwner(session.tenantId) : Promise.resolve([]),
+    experience.supportsMenuOptions ? listOptionGroupsForOwner(session.tenantId) : Promise.resolve([]),
+    experience.supportsMenuOptions ? listAssignedGroupIdsByProduct(session.tenantId, products.map((p) => p.id)) : Promise.resolve(new Map<string, string[]>()),
+  ]);
 
   return (
     <main className="shell">
@@ -148,6 +152,12 @@ export default async function CatalogPage({
                   <div className={styles.itemInfo}>
                     <span className={styles.itemName}>{product.name}</span>
                     <span className={styles.itemPrice}>{formatZAR(product.price)}</span>
+                    {product.hashtags.length > 0 && <span className={styles.itemPrice}>{hashtagLine(product.hashtags)}</span>}
+                    {product.shareCount > 0 && (
+                      <span className={styles.itemPrice}>
+                        Shared {product.shareCount} {product.shareCount === 1 ? "time" : "times"}
+                      </span>
+                    )}
                     <AvailabilityNote
                       hint={
                         !product.isActive ? "Hidden from customers" : product.soldOut ? "Sold out today — back tomorrow" : productEditor.availability.onLabel
@@ -181,6 +191,7 @@ export default async function CatalogPage({
                           isActive={product.isActive}
                           categories={categories}
                           defaultCategoryId={product.categoryId ?? undefined}
+                          defaultHashtags={hashtagLine(product.hashtags)}
                           optionGroups={
                             experience.supportsMenuOptions
                               ? { all: allOptionGroups, assignedIds: assignedGroupIdsByProduct.get(product.id) ?? [] }
@@ -325,6 +336,7 @@ function ProductFields({
   categories,
   defaultCategoryId,
   optionGroups,
+  defaultHashtags,
 }: {
   editor: ProductEditorProfile;
   idPrefix: string;
@@ -339,12 +351,15 @@ function ProductFields({
   defaultCategoryId?: string;
   /** undefined for a non-Food business, or for the Add form (a new product has no id to assign groups to yet). */
   optionGroups?: { all: { id: string; name: string; isActive: boolean }[]; assignedIds: string[] };
+  /** Social products (Tab 7): the stored tags as one line ("#kota #soweto"); undefined on the Add form. */
+  defaultHashtags?: string;
 }) {
   return (
     <>
       <EditorSection heading={editor.basic.heading}>
         <NameField idPrefix={idPrefix} label={editor.basic.nameLabel} defaultValue={defaultName} />
         <DescriptionField idPrefix={idPrefix} label={editor.basic.descriptionLabel} defaultValue={defaultDescription} />
+        <HashtagsField idPrefix={idPrefix} defaultValue={defaultHashtags} />
       </EditorSection>
       <EditorSection heading={editor.pricing.heading}>
         <MoneyField idPrefix={idPrefix} label={editor.pricing.priceLabel} defaultValue={defaultPrice} />

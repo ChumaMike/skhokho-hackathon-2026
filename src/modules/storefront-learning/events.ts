@@ -30,9 +30,10 @@ export const STOREFRONT_EVENT_TYPES = [
   'BOOKING_SUBMITTED',
   'ENQUIRY_CLICK',
   'LEAD_SUBMITTED',
+  'PRODUCT_SHARE',
 ] as const satisfies readonly StorefrontEventType[]
 
-/** Only these may come from a browser; orders, bookings and saved leads are counted server-side. */
+/** Only these may come from a browser; orders, bookings, saved leads and completed shares are counted server-side. */
 export const CLIENT_EVENT_TYPES = ['PAGE_VIEW', 'PRODUCT_VIEW', 'CTA_CLICK', 'ADD_TO_BASKET', 'CHECKOUT_START', 'ENQUIRY_CLICK'] as const
 
 /**
@@ -42,7 +43,7 @@ export const CLIENT_EVENT_TYPES = ['PAGE_VIEW', 'PRODUCT_VIEW', 'CTA_CLICK', 'AD
  * from the page model, lowercase letters, digits and dashes only, never
  * free text.
  */
-export const STOREFRONT_PAGES = ['HOME', 'SHOP', 'ABOUT', 'CONTACT', 'GALLERY', 'PRODUCT', 'BASKET', 'CHECKOUT', 'CONFIGURE'] as const
+export const STOREFRONT_PAGES = ['HOME', 'SHOP', 'ABOUT', 'CONTACT', 'GALLERY', 'PRODUCT', 'BASKET', 'CHECKOUT', 'CONFIGURE', 'TAG'] as const
 export const OWNER_PAGE = /^page:[a-z0-9]+(?:-[a-z0-9]+)*$/
 export const STOREFRONT_SECTIONS = ['HERO', 'NAV', 'TRUST_BAR', 'CATALOGUE', 'ABOUT', 'REVIEWS', 'CONTACT'] as const
 export const DEVICES = ['MOBILE', 'DESKTOP'] as const

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
  * 404s here, as before. A business without the PRODUCTS capability has no
  * such page and 404s too.
  */
-export default async function StoreShopPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ collection?: string }> }) {
+export default async function StoreShopPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ collection?: string; sort?: string }> }) {
   const { slug } = await params;
   const business = await getBusinessBySlug(slug);
   if (!business) notFound();

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { formatZAR } from "@/lib/utils";
 import { groupByCategory } from "@/lib/storefront/catalog-groups";
+import { PRODUCT_SORT_LABELS, PRODUCT_SORTS, sortProducts, type ProductSort } from "@/lib/storefront/catalog-sort";
 import type { StorefrontProduct } from "@/components/storefront/ProductsSection";
 import ShopfrontAddControl from "./ShopfrontAddControl";
+import ShareButton from "@/components/storefront/share/ShareButton";
 import ShopfrontStickyBar from "./ShopfrontStickyBar";
 import shared from "./Shopfront.module.css";
 import styles from "./ShopfrontMenu.module.css";
@@ -24,6 +26,8 @@ export default function ShopfrontMenu({
   ordersEnabled,
   catalogLabel,
   grouped = true,
+  sort = "default",
+  sortHref,
 }: {
   products: StorefrontProduct[];
   businessId: string;
@@ -32,11 +36,15 @@ export default function ShopfrontMenu({
   catalogLabel: string;
   /** false = the LIST layout: one plain list, no category chips (layouts.ts). */
   grouped?: boolean;
+  /** Customer's price sort (from ?sort=); applied inside each category group so the owner's grouping holds. */
+  sort?: ProductSort;
+  /** Where the sort links go (the page path); when absent no sort control renders (e.g. the Home excerpt). */
+  sortHref?: string;
 }) {
   if (products.length === 0) return null;
 
   const shown = products.slice(0, MENU_LIMIT);
-  const groups = grouped ? groupByCategory(shown) : [{ id: null, name: null, products: shown }];
+  const groups = (grouped ? groupByCategory(shown) : [{ id: null, name: null, products: shown }]).map((g) => ({ ...g, products: sortProducts(g.products, sort) }));
   const priceById = new Map(products.map((p) => [p.id, Number(p.price)]));
 
   return (
@@ -58,6 +66,15 @@ export default function ShopfrontMenu({
                 <a key={group.id ?? "more"} href={`#menu-group-${i}`} className={styles.chip}>
                   {group.name ?? "More"}
                 </a>
+              ))}
+            </nav>
+          )}
+          {sortHref && shown.length > 1 && (
+            <nav className={styles.chips} aria-label="Sort by price">
+              {PRODUCT_SORTS.map((s) => (
+                <Link key={s} href={s === "default" ? sortHref : `${sortHref}?sort=${s}`} className={styles.chip} aria-current={s === sort ? "true" : undefined} rel="nofollow">
+                  {PRODUCT_SORT_LABELS[s]}
+                </Link>
               ))}
             </nav>
           )}
@@ -83,7 +100,11 @@ export default function ShopfrontMenu({
                         </div>
                       </div>
                       <div className={styles.side}>
-                        <span className={styles.price}>{formatZAR(product.price)}</span>
+                        <span className={styles.priceRow}>
+                          <span className={styles.price}>{formatZAR(product.price)}</span>
+                          {/* Social products (Tab 7): share this dish. */}
+                          <ShareButton product={product} />
+                        </span>
                         {ordersEnabled && <ShopfrontAddControl product={product} businessId={businessId} basePath={basePath} />}
                       </div>
                     </li>

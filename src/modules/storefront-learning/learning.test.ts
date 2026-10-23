@@ -103,6 +103,8 @@ test("beacon: storefront paths map to fixed page names, on both URL styles", () 
     assert.deepEqual(classifyStorefrontPath(`${base}/shop`, base), { page: "SHOP" });
     assert.deepEqual(classifyStorefrontPath(`${base}/product/p1`, base), { page: "PRODUCT", itemId: "p1" });
     assert.deepEqual(classifyStorefrontPath(`${base}/basket`, base), { page: "BASKET" });
+    assert.deepEqual(classifyStorefrontPath(`${base}/tag/kota`, base), { page: "TAG" }, "hashtag pages count together; the tag is never sent");
+    assert.equal(classifyStorefrontPath(`${base}/tag`, base), null);
     assert.deepEqual(classifyStorefrontPath(`${base}/something-else`, base), { page: "page:something-else" });
     assert.equal(classifyStorefrontPath(`${base}/Something_Else`, base), null);
   }

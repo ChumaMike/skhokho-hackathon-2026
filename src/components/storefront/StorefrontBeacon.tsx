@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-type Page = "HOME" | "SHOP" | "ABOUT" | "CONTACT" | "GALLERY" | "PRODUCT" | "BASKET" | "CHECKOUT" | "CONFIGURE" | `page:${string}`;
+type Page = "HOME" | "SHOP" | "ABOUT" | "CONTACT" | "GALLERY" | "PRODUCT" | "BASKET" | "CHECKOUT" | "CONFIGURE" | "TAG" | `page:${string}`;
 
 /** An owner page's address (page model slug) — anything else is not counted at all. */
 const OWNER_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -34,6 +34,9 @@ export function classifyStorefrontPath(pathname: string, basePath: string): { pa
       return second ? { page: "PRODUCT", itemId: second } : null;
     case "configure":
       return second ? { page: "CONFIGURE", itemId: second } : null;
+    case "tag":
+      // Hashtag pages (Tab 7): counted together; the tag itself is the merchant's word, never sent.
+      return second ? { page: "TAG" } : null;
     default:
       // Services, reviews, policies, request forms, custom pages: counted by their own address.
       return !second && first.length <= 40 && OWNER_SLUG.test(first) ? { page: `page:${first}` } : null;

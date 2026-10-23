@@ -54,7 +54,7 @@ export const PAGE_LIMITS = {
 export const RESERVED_PAGE_SLUGS: ReadonlySet<string> = new Set([
   'shop', 'menu', 'services', 'about', 'contact', 'gallery', 'reviews',
   ...WORKFLOW_SLUGS,
-  'basket', 'cart', 'checkout', 'configure', 'product', 'order', 'orders', 'pay', 'account', 'login', 'register', 'join',
+  'basket', 'cart', 'checkout', 'configure', 'product', 'tag', 'order', 'orders', 'pay', 'account', 'login', 'register', 'join',
   'api', 'dashboard', 'admin', 'platform-admin', 'preview', 'store', 'r', 'discover', 'terms', 'privacy',
   'sitemap.xml', 'robots.txt', 'favicon.ico', '_next', 'static',
 ])

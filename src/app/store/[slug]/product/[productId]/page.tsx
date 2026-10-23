@@ -10,6 +10,8 @@ import ShopfrontBookingPageShell from "@/components/storefront/shopfront-booking
 import { storefrontBasePath } from "@/lib/tenant/storefront-request";
 import { loadSite } from "@/modules/storefront-spec/site";
 import { buildPageMetadata, buildProductJsonLd, serializeJsonLd } from "@/modules/tenant/storefront-seo";
+import { canonicalStorefrontUrl } from "@/modules/tenant/storefront-url";
+import { shareImagePath, shareImageVersion } from "@/lib/storefront/share";
 
 export const dynamic = "force-dynamic";
 
@@ -25,12 +27,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const catalog = await getActiveCatalog(business.id);
   const product = catalog.products.find((p) => p.id === productId);
   if (!product) return { title: "Product not found", robots: { index: false, follow: false } };
-  // The product's own photo is the share image; its description the listing text.
+  // The share image is the composed card (photo, name, price, shop logo — share-image/route.tsx),
+  // at its canonical address with a version token so an edit replaces the cached card.
+  const version = shareImageVersion({ name: product.name, price: product.price, imageUrl: product.imageUrl ?? product.images[0] ?? null, businessName: business.name, logoUrl: business.logoUrl });
   return buildPageMetadata(business, {
     title: product.name,
     path: `/product/${product.id}`,
     description: product.description ?? `${product.name} from ${business.name}.`,
-    image: product.imageUrl ?? product.images[0] ?? null,
+    image: canonicalStorefrontUrl(business.slug, shareImagePath(product.id, version), business.domains?.[0]?.hostname),
   });
 }
 
@@ -61,7 +65,13 @@ export default async function StoreProductPage({ params }: { params: Promise<Par
     <>
       {/* serializeJsonLd escapes `<` so a product's own name/description can never break out of this tag. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildProductJsonLd(business, product)) }} />
-      <ShopfrontProductDetail product={product} businessId={business.id} basePath={basePath} ordersEnabled={capabilities.has("ORDERS")} />
+      <ShopfrontProductDetail
+        product={product}
+        businessId={business.id}
+        basePath={basePath}
+        ordersEnabled={capabilities.has("ORDERS")}
+        shareUrl={canonicalStorefrontUrl(business.slug, `/product/${product.id}`, business.domains?.[0]?.hostname)}
+      />
     </>
   );
 

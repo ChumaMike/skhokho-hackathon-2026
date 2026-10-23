@@ -76,6 +76,12 @@ export default async function StorefrontAnalyticsPage({ searchParams }: { search
                 <span className={styles.totalLabel}>From phones</span>
                 <strong className={styles.totalValue}>{pct(analytics.totals.phoneShare)}</strong>
               </div>
+              {/* Social products (Tab 7): completed shares, counted without knowing who. */}
+              <div className={`card ${styles.total}`}>
+                <span className={styles.totalLabel}>Shares</span>
+                <strong className={styles.totalValue}>{analytics.totals.shares}</strong>
+                <span className={styles.totalHint}>Items sent on to WhatsApp, Instagram and friends</span>
+              </div>
               {(analytics.totals.orders > 0 || analytics.totals.bookings > 0) && (
                 <div className={`card ${styles.total}`}>
                   <span className={styles.totalLabel}>Orders and bookings</span>
@@ -138,6 +144,18 @@ export default async function StorefrontAnalyticsPage({ searchParams }: { search
               </div>
             )}
 
+            {analytics.mostShared.length > 0 && (
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Most shared</h2>
+                <ul className={styles.insights}>
+                  {analytics.mostShared.map((p) => (
+                    <li key={p.id}>
+                      {p.name} — shared {p.shareCount} {p.shareCount === 1 ? "time" : "times"}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             {insights && insights.enoughData && insights.insights.length > 0 && (
               <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>What stands out</h2>

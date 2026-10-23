@@ -12,6 +12,7 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma/client'
 import { assertCanAdd } from '@/modules/billing/limits'
+import { MAX_HASHTAGS, parseHashtags } from '@/lib/storefront/share'
 
 export interface PublicProduct {
   id: string
@@ -28,6 +29,8 @@ export interface PublicProduct {
   hasOptions: boolean
   /** Tab 5 — listed but not orderable right now ("sold out today"); the storefront shows it, greyed, and the cart refuses it. */
   soldOut: boolean
+  /** Tab 7 (social products) — the merchant's hashtags, bare and lower case; empty for most products. */
+  hashtags: string[]
 }
 
 export interface PublicService {
@@ -63,6 +66,7 @@ export async function getActiveCatalog(businessId: string, now: Date = new Date(
         images: true,
         price: true,
         soldOutUntil: true,
+        hashtags: true,
         category: { select: { id: true, name: true } },
         // Only whether at least one row exists — the real active-option
         // gate (group active AND has active options) is
@@ -92,6 +96,7 @@ export async function getActiveCatalog(businessId: string, now: Date = new Date(
       categoryName: p.category?.name ?? null,
       hasOptions: p.optionGroups.length > 0,
       soldOut: isSoldOut(p.soldOutUntil, now),
+      hashtags: p.hashtags,
     })),
     services: services.map((s) => ({ ...s, price: s.price.toString() })),
   }
@@ -156,6 +161,9 @@ export const CreateProductSchema = z.object({
    *  below, never trusted as belonging to this business merely because an
    *  id was supplied. */
   categoryId: z.string().nullable().optional(),
+  /** Tab 7 (social products) — as typed or as a list; normalised by parseHashtags before it is stored, so the
+   *  stored value is always bare, lower case and at most MAX_HASHTAGS long. `undefined` leaves the tags alone on update. */
+  hashtags: z.union([z.string().max(600), z.array(z.string().max(60)).max(MAX_HASHTAGS * 4)]).optional(),
 })
 
 export const UpdateProductSchema = CreateProductSchema.partial()
@@ -274,6 +282,7 @@ export async function createProduct(businessId: string, input: z.infer<typeof Cr
       sku: validated.sku,
       imageUrl: validated.imageUrl,
       categoryId: categoryId ?? undefined,
+      hashtags: validated.hashtags === undefined ? undefined : parseHashtags(validated.hashtags),
       // No inventory-management screen exists yet to ever seed a real
       // InventoryItem/starting quantity (see the Stock preset's own
       // "no dedicated screen yet" summary) — the schema default of
@@ -312,7 +321,8 @@ export async function updateProduct(
   const product = await prisma.product.findFirst({ where: { id: productId, businessId } })
   if (!product) throw new Error('Product not found')
   const categoryId = await resolveCategoryId(businessId, validated.categoryId)
-  return prisma.product.update({ where: { id: productId }, data: { ...validated, categoryId } })
+  const hashtags = validated.hashtags === undefined ? undefined : parseHashtags(validated.hashtags)
+  return prisma.product.update({ where: { id: productId }, data: { ...validated, categoryId, hashtags } })
 }
 
 export async function updateService(

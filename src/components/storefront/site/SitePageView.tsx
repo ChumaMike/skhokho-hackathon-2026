@@ -5,6 +5,7 @@ import { getStorefrontContent, computeTrustBarFacts } from "@/modules/tenant/sto
 import { resolveStorefrontVariant } from "@/modules/tenant/shopfront-eligibility";
 import { resolveHomeLayout } from "@/modules/storefront-spec/layout";
 import { pageHref, type SitePage } from "@/modules/storefront-spec/pages";
+import type { ProductSort } from "@/lib/storefront/catalog-sort";
 import type { ResolvedSite } from "@/modules/storefront-spec/site";
 import WorkflowForm from "./WorkflowForm";
 import styles from "./SitePage.module.css";
@@ -43,6 +44,7 @@ export default function SitePageView({
   rating,
   notice,
   collection,
+  sort = "default",
 }: {
   business: PageBusiness;
   page: SitePage;
@@ -55,6 +57,8 @@ export default function SitePageView({
   notice?: { kind: "ok" | "err"; message: string };
   /** ?collection= — a collection tile on Home opens the Shop page filtered to it. */
   collection?: string;
+  /** ?sort= — the customer's price sort for this page's catalogue sections. */
+  sort?: ProductSort;
 }) {
   const variant = resolveStorefrontVariant(business);
   const experience = getBusinessExperience(business.category);
@@ -147,7 +151,7 @@ export default function SitePageView({
             }
             if (section.layout === "LIST") {
               return (
-                <ShopfrontMenu key={key} products={catalog.products} businessId={business.id} basePath={basePath} ordersEnabled={capabilities.has("ORDERS")} catalogLabel={experience.catalogLabel} />
+                <ShopfrontMenu key={key} products={catalog.products} businessId={business.id} basePath={basePath} ordersEnabled={capabilities.has("ORDERS")} catalogLabel={experience.catalogLabel} sort={sort} sortHref={pageUrl} />
               );
             }
             return (
@@ -159,6 +163,7 @@ export default function SitePageView({
                 ordersEnabled={capabilities.has("ORDERS")}
                 catalogLabel={experience.catalogLabel}
                 initialCategory={collection}
+                initialSort={sort}
               />
             );
           }

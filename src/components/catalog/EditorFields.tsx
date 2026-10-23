@@ -46,6 +46,24 @@ export function DescriptionField({ idPrefix, label, defaultValue }: { idPrefix: 
   );
 }
 
+/**
+ * Social products (Tab 7): up to eight hashtags, typed any way the merchant
+ * likes ("#kota #soweto" or "kota, soweto") — lib/storefront/share.ts tidies
+ * them. Shown on the product, carried in every share, and each one gets a
+ * page of this shop's products at /tag/<tag>.
+ */
+export function HashtagsField({ idPrefix, defaultValue }: { idPrefix: string; defaultValue?: string }) {
+  return (
+    <div className="field">
+      <label className="label" htmlFor={`${idPrefix}-hashtags`}>
+        Hashtags (optional)
+      </label>
+      <span className={styles.hint}>Up to eight, like #kota #soweto. Customers see them on the item and they go with every share.</span>
+      <input className="input" id={`${idPrefix}-hashtags`} name="hashtags" maxLength={600} placeholder="#kota #soweto" defaultValue={defaultValue} autoCapitalize="none" autoCorrect="off" />
+    </div>
+  );
+}
+
 export function MoneyField({ idPrefix, label, defaultValue }: { idPrefix: string; label: string; defaultValue?: string }) {
   return (
     <div className="field">

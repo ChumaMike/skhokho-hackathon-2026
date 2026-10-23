@@ -85,16 +85,23 @@ function categoryIdField(formData: FormData): string | undefined {
   return typeof raw === "string" && raw.trim() ? raw.trim() : undefined;
 }
 
+/** Social products (Tab 7): the hashtags box as typed; the service normalises it. Absent from the form → leave the tags alone. */
+function hashtagsField(formData: FormData): string | undefined {
+  const raw = formData.get("hashtags");
+  return typeof raw === "string" ? raw.slice(0, 600) : undefined;
+}
+
 export async function addProduct(formData: FormData): Promise<void> {
   const { tenantId } = await permittedRedirect();
   const name = String(formData.get("name") ?? "").trim();
   const price = Number(formData.get("price"));
   const description = String(formData.get("description") ?? "").trim() || undefined;
   const categoryId = categoryIdField(formData);
+  const hashtags = hashtagsField(formData);
   const { url: imageUrl, warning } = await resolveImageUrl(formData, tenantId);
 
   try {
-    await createProduct(tenantId, { name, price, description, imageUrl, categoryId });
+    await createProduct(tenantId, { name, price, description, imageUrl, categoryId, hashtags });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not add that product.";
     redirect(`/dashboard/catalog?err=${encodeURIComponent(message)}`);
@@ -132,10 +139,11 @@ export async function editProduct(productId: string, formData: FormData): Promis
   const price = Number(formData.get("price"));
   const description = String(formData.get("description") ?? "").trim() || undefined;
   const categoryId = formData.has("categoryId") ? (categoryIdField(formData) ?? null) : undefined;
+  const hashtags = hashtagsField(formData);
   const { url: imageUrl, warning } = await resolveImageUrl(formData, tenantId);
 
   try {
-    await updateProduct(tenantId, productId, { name, price, description, categoryId, ...(imageUrl && { imageUrl }) });
+    await updateProduct(tenantId, productId, { name, price, description, categoryId, hashtags, ...(imageUrl && { imageUrl }) });
     // Only present (even as an empty selection) for a Food-experience
     // business — see ProductFields' "menuOptionsEnabled" hidden marker.
     // Retail/Salon submissions never carry this field, so their products'

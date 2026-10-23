@@ -9,6 +9,7 @@ import { OK_MESSAGES } from "@/modules/tenant/storefront-notice";
 import type { SitePage } from "@/modules/storefront-spec/pages";
 import SitePageView from "@/components/storefront/site/SitePageView";
 import { storefrontBasePath } from "@/lib/tenant/storefront-request";
+import { parseProductSort } from "@/lib/storefront/catalog-sort";
 
 /**
  * One implementation behind every non-home storefront page: the built-in
@@ -18,7 +19,7 @@ import { storefrontBasePath } from "@/lib/tenant/storefront-request";
  * reached it. A page that is hidden, that the business can't serve, or
  * that would render empty is a 404 — never a blank page with a heading.
  */
-export async function renderSitePage(slug: string, pageSlug: string, searchParams: { ok?: string; err?: string; collection?: string } = {}) {
+export async function renderSitePage(slug: string, pageSlug: string, searchParams: { ok?: string; err?: string; collection?: string; sort?: string } = {}) {
   const business = await getBusinessBySlug(slug);
   if (!business) notFound();
   const basePath = await storefrontBasePath(business.slug);
@@ -36,7 +37,9 @@ export async function renderSitePage(slug: string, pageSlug: string, searchParam
       : undefined;
 
   const collection = typeof searchParams.collection === "string" ? searchParams.collection.slice(0, 80) : undefined;
-  return <SitePageView business={business} page={page} site={site} basePath={basePath} catalog={catalog} reviews={reviews} rating={rating} notice={notice} collection={collection} />;
+  // Price sort is a customer preference for this page view only — nothing is stored, unknown values mean the owner's order.
+  const sort = parseProductSort(searchParams.sort);
+  return <SitePageView business={business} page={page} site={site} basePath={basePath} catalog={catalog} reviews={reviews} rating={rating} notice={notice} collection={collection} sort={sort} />;
 }
 
 /** What a page is about when the owner hasn't written a search description: a plain sentence per kind, never marketing. */

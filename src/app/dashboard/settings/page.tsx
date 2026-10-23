@@ -15,6 +15,7 @@ import { getBusinessEntitlements } from "@/modules/billing/subscription.service"
 import { hasFeature, type Entitlements } from "@/modules/billing/entitlements";
 import { legalInformationGaps, LEGAL_GAP_LABELS } from "@/modules/tenant/legal-information";
 import DashboardNav from "@/components/DashboardNav";
+import ImageFileInput from "@/components/dashboard/ImageFileInput";
 import {
   updateSettings,
   updateMinimumOrder,
@@ -46,10 +47,15 @@ export default async function SettingsPage({
     permitted = false;
   }
 
-  const business = await prisma.business.findUnique({ where: { id: session.tenantId } });
-  const theme = await getThemePreference();
-  const emailState = permitted ? await getBusinessEmailState(session.tenantId) : null;
-  const entitlements = permitted ? await getBusinessEntitlements(session.tenantId) : null;
+  // Four independent reads in one round trip, not four in a row: on a slow
+  // connection to a far database that is the difference between the page
+  // arriving and the merchant giving up on it.
+  const [business, theme, emailState, entitlements] = await Promise.all([
+    prisma.business.findUnique({ where: { id: session.tenantId } }),
+    getThemePreference(),
+    permitted ? getBusinessEmailState(session.tenantId) : Promise.resolve(null),
+    permitted ? getBusinessEntitlements(session.tenantId) : Promise.resolve(null),
+  ]);
   const legalGaps = business ? legalInformationGaps(business) : [];
 
   return (
@@ -132,13 +138,8 @@ export default async function SettingsPage({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={business.logoUrl} alt="" className={styles.currentLogo} />
                   )}
-                  <input
-                    className="input"
-                    id="logo"
-                    name="logo"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                  />
+                  <ImageFileInput id="logo" name="logo" />
+                  <p className={styles.sub} style={{ marginTop: 6 }}>JPG, PNG, WEBP or GIF, under 4 MB.</p>
                 </div>
               </section>
 

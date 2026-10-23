@@ -90,6 +90,12 @@
   gap: 10px;
 }
 
+.productActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .productPrice {
   font-family: var(--font-mono);
   color: var(--store-page-accent);
