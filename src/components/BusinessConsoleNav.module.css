@@ -1,0 +1,411 @@
+/*
+ * Business Console shell — uses the dashboard's own --ink/--board/--edge/
+ * --amber/--chalk/--dust tokens (globals.css), never a storefront theme
+ * token. The admin stays a consistent Skhokho product regardless of how
+ * loud a merchant's brand colours are (Business Console milestone §8).
+ *
+ * globals.css pins the warm "chalk workspace" light tokens on the console
+ * `.shell` this component is rendered inside of — .sidebar/.mobileBar/
+ * .drawer re-pin the original dark values here so the nav chrome stays
+ * dark against that light content, matching the Connected System V2
+ * dark-sidebar/warm-paper-content split.
+ */
+
+.sidebar,
+.mobileBar,
+.drawer {
+  --ink: #0e0a05;
+  --board: #171009;
+  --edge: #2e2011;
+  --amber: #e8a020;
+  --veld: #5b8c3a;
+  --oxide: #c8452f;
+  --chalk: #f5efe6;
+  --dust: #8a7b68;
+  /* Re-declare `color` for the same reason globals.css's `.shell` does:
+   * re-pinning the tokens above does nothing for text that merely INHERITS
+   * a colour, because a var() resolves where it is declared. The console
+   * `.shell` these three sit inside now sets the light palette's near-black
+   * text, so without this every label in the dark nav chrome would inherit
+   * that near-black onto a near-black ground. */
+  color: var(--chalk);
+}
+
+/* ---------------------------------------------------------------------------
+ * Shared identity block (reused by desktop sidebar header + mobile drawer)
+ * ------------------------------------------------------------------------- */
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  /* Connected direction lifts the business identity onto its own card rather
+     than letting it float against the sidebar. Uses --edge (already re-pinned
+     dark on this element) instead of the pack's literal #251a0e. */
+  padding: 11px;
+  border-radius: 12px;
+  background: var(--edge);
+  border: 1px solid color-mix(in srgb, var(--chalk) 10%, var(--edge));
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--edge);
+}
+
+.logoFallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  background: var(--edge);
+  color: var(--chalk);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+}
+
+.identityText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.businessName {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--chalk);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex-shrink: 0;
+}
+
+.dotLive {
+  background: var(--veld);
+}
+
+.dotOff {
+  background: var(--oxide);
+}
+
+.dotDraft {
+  background: var(--amber);
+}
+
+/* ---------------------------------------------------------------------------
+ * Grouped nav links (shared by sidebar + drawer)
+ * ------------------------------------------------------------------------- */
+
+.group + .group {
+  margin-top: 18px;
+}
+
+.groupTitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dust);
+  margin: 0 0 6px;
+  padding: 0 10px;
+}
+
+.groupLinks {
+  display: grid;
+  gap: 2px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch-min);
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: var(--text-sm);
+  color: var(--dust);
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--edge);
+  color: var(--chalk);
+}
+
+/*
+ * The Connected direction marks the active module with a dark raised row and
+ * an amber spine down its leading edge, rather than the solid amber pill this
+ * used before. In a sidebar with ten-plus modules a full amber fill is the
+ * loudest thing on the screen and competes with the primary action; the spine
+ * reads as "you are here" without shouting.
+ *
+ * Still carried by three signals at once — fill, spine and weight — so it
+ * never depends on colour alone, and aria-current continues to do the real
+ * work for assistive tech.
+ */
+.linkActive {
+  color: var(--chalk);
+  background: var(--edge);
+  box-shadow: inset 3px 0 var(--amber);
+  font-weight: 700;
+}
+
+.linkActive:hover {
+  background: var(--edge);
+  color: var(--chalk);
+}
+
+.linkIcon {
+  flex-shrink: 0;
+}
+
+.footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--edge);
+  display: grid;
+  gap: 2px;
+}
+
+.footerLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch-min);
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: var(--text-sm);
+  color: var(--dust);
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  background: var(--edge);
+  color: var(--chalk);
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile top app bar — visible below the desktop breakpoint
+ * ------------------------------------------------------------------------- */
+
+.mobileBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
+  margin: -24px -16px 16px;
+  background: var(--ink);
+  border-bottom: 1px solid var(--edge);
+}
+
+.mobileIdentity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.mobileBusinessName {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileSection {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--chalk);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile drawer
+ * ------------------------------------------------------------------------- */
+
+.drawerScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.drawerScrimOpen {
+  pointer-events: auto;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  background: rgba(14, 10, 5, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drawerScrimOpen .scrim {
+  opacity: 1;
+}
+
+.drawer {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: min(86vw, 320px);
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink);
+  border-right: 1px solid var(--edge);
+  padding: 16px;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  overflow-y: auto;
+}
+
+.drawerOpen {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--edge);
+}
+
+.drawerNav {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ---------------------------------------------------------------------------
+ * Desktop sidebar — hidden entirely below the breakpoint; matched by the
+ * global `.shell` padding-reservation rule in globals.css.
+ * ------------------------------------------------------------------------- */
+
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .mobileBar {
+    display: none;
+  }
+
+  .drawerScrim {
+    display: none;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--console-sidebar-width);
+    height: 100dvh;
+    padding: 20px 14px;
+    /* Warm gradient rather than a flat panel — the Connected shell's
+       "premium dark ground". Expressed with the tokens already re-pinned on
+       this element, not the pack's literal #191107/#0e0a05. */
+    background: linear-gradient(160deg, var(--board), var(--ink) 74%);
+    border-right: 1px solid var(--edge);
+    z-index: 20;
+  }
+
+  .sidebarNav {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--edge);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Brand lockup — Connected console shell. Desktop sidebar only: the mobile bar
+ * already carries the business name, and repeating the product name there
+ * would spend scarce phone width on something the owner never needs to read.
+ * ------------------------------------------------------------------------- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px 12px;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--chalk);
+}
+
+.brandIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--amber);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+/* The line under the sidebar footer links. Deliberately quiet — it is a
+ * reminder of what the product is for, not a call to action. */
+.footerTagline {
+  display: block;
+  padding: 10px 10px 0;
+  font-size: var(--text-xs);
+  color: var(--dust);
+  line-height: 1.4;
+}

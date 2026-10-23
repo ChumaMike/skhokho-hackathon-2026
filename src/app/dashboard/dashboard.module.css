@@ -1,0 +1,523 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerLogo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.headerLogoFallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.headerLink {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  padding: 8px 10px;
+  min-height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.headerLink:hover {
+  color: var(--chalk);
+}
+
+.logout {
+  background: none;
+  border: none;
+  color: var(--dust);
+  font-size: var(--text-sm);
+  padding: 8px 4px;
+  min-height: var(--touch-min);
+}
+
+.logout:hover {
+  color: var(--chalk);
+}
+
+.businessName {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+  margin: 4px 0 24px;
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.statCard {
+  text-align: center;
+  padding: 24px 12px;
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--amber);
+  margin: 0 0 6px;
+}
+
+.statLabel {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.statSub {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin: 6px 0 0;
+}
+
+/* Empty states — an intentional next step, not a bare zero */
+.emptyState {
+  text-align: center;
+  padding: 20px 16px;
+  color: var(--dust);
+  margin-top: 12px;
+}
+
+.emptyStateLink {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--amber);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Happening now */
+
+.happeningNow {
+  margin-top: 20px;
+}
+
+.happeningNowList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.happeningNowItem {
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  background: var(--board);
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+/* Customer retention */
+
+.retention {
+  margin-top: 20px;
+}
+
+.retentionCard {
+  display: block;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.retentionCard:hover {
+  border-color: var(--amber);
+}
+
+.statDelta {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--dust);
+  margin-top: 6px;
+}
+
+.statDelta[data-direction="up"] {
+  color: var(--veld);
+}
+
+/* Publication status banner */
+
+.pubStatus {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: -12px 0 20px;
+  border: 1px solid var(--edge);
+}
+
+.pubStatusDraft {
+  background: rgba(232, 160, 32, 0.1);
+  border-color: var(--amber);
+}
+
+.pubStatusLive {
+  background: rgba(91, 140, 58, 0.14);
+  border-color: var(--veld);
+}
+
+.pubStatusOff {
+  background: rgba(200, 69, 47, 0.1);
+  border-color: var(--oxide);
+}
+
+.pubDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+  background: var(--amber);
+}
+
+.pubStatusLive .pubDot {
+  background: var(--veld);
+}
+
+.pubStatusOff .pubDot {
+  background: var(--oxide);
+}
+
+.pubBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.pubTitle {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.pubSub {
+  margin: 4px 0 0;
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.pubChecklist {
+  margin: 8px 0 0;
+  padding: 0 0 0 18px;
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.pubChecklist li {
+  margin-bottom: 2px;
+}
+
+.pubActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pubLink {
+  font-size: var(--text-xs);
+  color: var(--dust);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.pubLink:hover {
+  color: var(--chalk);
+}
+
+.pubPublishBtn {
+  padding: 8px 14px;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* Needs your attention */
+
+.attention {
+  margin-top: 20px;
+}
+
+.attentionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 8px;
+  color: var(--dust);
+}
+
+.attentionList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.attentionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  min-height: var(--touch-min);
+}
+
+.attentionItem:hover {
+  border-color: var(--amber);
+}
+
+.attentionDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex-shrink: 0;
+}
+
+/* info severity uses the default amber dot above; warning/critical
+   override it — status is never color-only (the label text always says
+   what's wrong), this is a scan-speed aid on top of that, not the only
+   signal. */
+.attentionDotWarning {
+  background: var(--amber);
+}
+
+.attentionDotCritical {
+  background: var(--oxide);
+}
+
+/* Quick actions */
+
+.quickActions {
+  margin-top: 20px;
+}
+
+.quickActionsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.quickActionItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: var(--touch-min);
+  padding: 14px 10px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.quickActionItem:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+/* Coming up */
+
+.comingUp {
+  margin-top: 20px;
+}
+
+.comingUpList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+}
+
+.comingUpItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+}
+
+.comingUpTime {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.comingUpService {
+  font-size: var(--text-sm);
+  color: var(--chalk);
+  text-align: right;
+}
+
+.comingUpLink {
+  display: inline-block;
+  font-size: var(--text-xs);
+  color: var(--dust);
+  text-decoration: underline;
+}
+
+.comingUpLink:hover {
+  color: var(--chalk);
+}
+
+.recentActivity {
+  margin-top: 20px;
+}
+
+.recentActivityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.recentActivityHeader .attentionTitle {
+  margin-bottom: 0;
+}
+
+.recentActivityBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 6px;
+  border-radius: 100px;
+  background: var(--amber);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.recentActivityMarkRead {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--dust);
+  text-decoration: underline;
+}
+
+.recentActivityMarkRead:hover {
+  color: var(--chalk);
+}
+
+.recentActivityList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recentActivityItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+}
+
+.recentActivityItemUnread {
+  border-color: var(--amber);
+}
+
+.recentActivityItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recentActivityItemTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.recentActivityItemMessage {
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.recentActivityItemTime {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * Connected home layout (Phase 1).
+ * The centred chrome column and the canvas itself are the shared
+ * `.consoleChrome` / `.consoleCanvas` pair in globals.css; only the
+ * bottom-bar reservation is specific to this page.
+ * ------------------------------------------------------------------------- */
+
+/* Reserves room for the fixed bottom action bar, which ConnectedHome's own
+ * page padding knows nothing about. Home is the only console page with one. */
+.homeCanvas {
+  padding-bottom: calc(var(--bottom-bar-height) + 24px);
+}

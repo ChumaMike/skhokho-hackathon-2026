@@ -1,0 +1,149 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.sub {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 20px;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 12px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.item {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.item[data-inactive="true"] {
+  opacity: 0.5;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemName {
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.itemPrice {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.toggleBtn {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--dust);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.editBtn {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--amber);
+  background: transparent;
+  color: var(--amber);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.deleteBtn,
+.deleteConfirmBtn {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--oxide);
+  background: transparent;
+  color: var(--oxide);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.deleteConfirmBtn {
+  background: var(--oxide);
+  color: var(--chalk);
+}
+
+.empty {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 12px;
+}
+
+.addToggle {
+  display: block;
+  color: var(--amber);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  background: none;
+  border: none;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row .field {
+  flex: 1;
+}
+
+.currentImage {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  margin-bottom: 8px;
+}

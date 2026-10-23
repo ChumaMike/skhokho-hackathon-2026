@@ -1,0 +1,52 @@
+/*
+ * Full-screen overlay, not a floating dialog — same shell/column/bottomBar
+ * primitives as every other screen (globals.css), just painted above the
+ * page it was opened from.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--ink);
+  overflow-y: auto;
+}
+
+.overlayInner {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 4px;
+  margin: 0 0 8px -4px;
+  background: none;
+  border: none;
+  color: var(--dust);
+  font-size: var(--text-sm);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.15;
+  margin: 4px 0 6px;
+}
+
+.sub {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 20px;
+}
+
+.textarea {
+  height: auto;
+  min-height: 88px;
+  padding: 10px 14px;
+  resize: vertical;
+}

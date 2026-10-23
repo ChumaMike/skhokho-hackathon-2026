@@ -1,0 +1,109 @@
+/* RETAIL_GRID — collections row + featured grid. Colours from --shop-* only. */
+
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 3.5vw, 38px);
+  margin: 0;
+}
+
+.viewAll {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--shop-primary-safe);
+  white-space: nowrap;
+}
+
+/* Phones: one swipeable row; desktop: a grid of tiles. */
+.tiles {
+  list-style: none;
+  padding: 0 0 8px;
+  margin: 0 0 36px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 72%;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.tiles li {
+  scroll-snap-align: start;
+}
+
+@media (min-width: 720px) {
+  .tiles {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    overflow: visible;
+  }
+}
+
+.tile {
+  display: block;
+  position: relative;
+  border-radius: var(--shop-radius);
+  overflow: hidden;
+  background: var(--shop-board);
+  color: var(--shop-cream);
+  aspect-ratio: 4 / 3;
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.tileImage,
+.tileFallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tileFallback {
+  display: grid;
+  place-items: center;
+  font-family: Georgia, serif;
+  font-size: 56px;
+  background: var(--shop-primary-safe);
+  color: var(--shop-on-primary);
+}
+
+.tileBody {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 36px 16px 14px;
+  background: linear-gradient(180deg, rgba(14, 10, 5, 0), rgba(14, 10, 5, 0.82));
+  display: grid;
+  gap: 2px;
+}
+
+.tileName {
+  font-family: Georgia, serif;
+  font-size: 20px;
+}
+
+.tileCount {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.featuredHead {
+  margin-top: 8px;
+}
+
+.featured {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .featured {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+}

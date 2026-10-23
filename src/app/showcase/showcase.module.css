@@ -1,0 +1,132 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.lede {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 28px;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 4px 0 6px;
+}
+
+.sectionText {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 16px;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 860px) {
+  .cardList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+}
+
+/* Plans */
+.planCard {
+  padding: 18px;
+}
+
+.planHeader {
+  margin-bottom: 4px;
+}
+
+.planName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--amber);
+}
+
+.planTagline {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 14px;
+}
+
+.limitList {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.limitList li {
+  font-size: var(--text-xs);
+  color: var(--chalk);
+  background: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.featureList {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--edge);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.featureRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.featureYes {
+  color: var(--veld);
+  font-weight: 600;
+}
+
+.featureNo {
+  color: var(--dust);
+}
+
+/* Services */
+.serviceCard {
+  padding: 18px;
+}
+
+.serviceName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 6px;
+}
+
+.serviceBlurb {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 12px;
+}
+
+.servicePrice {
+  color: var(--amber);
+  font-size: var(--text-sm);
+  margin: 0 0 16px;
+}

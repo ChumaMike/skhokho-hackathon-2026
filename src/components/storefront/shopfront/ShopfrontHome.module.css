@@ -1,0 +1,13 @@
+.noticeWrap {
+  padding-top: 24px;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--shop-muted);
+}
+
+.empty p {
+  margin: 4px 0;
+}

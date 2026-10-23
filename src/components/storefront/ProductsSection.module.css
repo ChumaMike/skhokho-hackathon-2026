@@ -1,0 +1,180 @@
+/*
+ * New basket-era controls (Add / quantity stepper / sticky bar). Colours
+ * always come from the --store-* tokens already on the ancestor
+ * .themeScope wrapper (StorefrontView.module.css) — never --chalk/--ink/
+ * --dust/--amber directly (those flip with the viewer's OS theme, see
+ * StorefrontView.module.css's own top-of-file note). The Add button is
+ * deliberately NOT --store-action-primary — repeating the merchant's one
+ * true primary action's colour down every product card would make it
+ * compete with itself; Add uses the secondary action pair instead, same
+ * as any other useful-but-not-THE-one-CTA control.
+ */
+
+/* Food Menu Domain Foundation §9 — one per real menu category, plus one
+ * (unlabelled unless it's the only group) for uncategorised items. */
+.categoryGroup + .categoryGroup {
+  margin-top: 28px;
+}
+
+.addButton {
+  min-width: 96px;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* The shared global `.card` class (background/border/radius only, no
+   padding) still applies via StorefrontView.module.css's
+   `.themeScope :global(.card)` override — this card's own padding lives on
+   .productBody instead, so the photo above it can bleed to the card's
+   edges rather than sitting inset like the text-only list items do. */
+.productCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.productImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.productImagePlaceholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  background: var(--store-page-accent);
+  color: var(--store-page-bg);
+  font-family: var(--font-display);
+  font-size: 32px;
+}
+
+.productBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--store-space-unit, 16px);
+  flex: 1;
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productName {
+  font-weight: 600;
+  color: var(--store-page-fg);
+}
+
+.productDesc {
+  color: var(--store-page-muted);
+  font-size: var(--text-sm);
+}
+
+.productFooter {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.productPrice {
+  font-family: var(--font-mono);
+  color: var(--store-page-accent);
+  font-weight: 600;
+}
+
+@media (min-width: 860px) {
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--store-page-border);
+  border-radius: var(--store-radius-button);
+  overflow: hidden;
+}
+
+.stepperButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--store-page-fg);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepperButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepperQty {
+  min-width: 28px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--store-page-fg);
+}
+
+.stickyBar {
+  position: sticky;
+  bottom: 12px;
+  z-index: 5;
+  margin: 16px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--store-radius-card);
+  border: 1px solid var(--store-page-border);
+  background: var(--store-page-bg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.stickyBarSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--store-page-fg);
+  font-size: var(--text-sm);
+}
+
+.stickyBarCount {
+  color: var(--store-page-muted);
+}
+
+.stickyBarTotal {
+  font-weight: 600;
+}
+
+.stickyBarLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--store-action-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}

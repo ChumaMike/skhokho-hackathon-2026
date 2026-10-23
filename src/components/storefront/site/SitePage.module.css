@@ -1,0 +1,315 @@
+/* Sections for owner-controlled pages — built on the shared Shopfront
+   primitives (container, section, eyebrow, card) and the --shop-* tokens,
+   so the merchant's colours carry through and nothing here needs a preset. */
+
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(24px, 3vw, 34px);
+  margin: 0 0 18px;
+}
+
+.subheading {
+  font-family: Georgia, serif;
+  font-size: clamp(20px, 2.4vw, 26px);
+  margin: 0 0 12px;
+}
+
+.prose {
+  max-width: 720px;
+  color: var(--shop-fg);
+  line-height: 1.75;
+  font-size: 16px;
+}
+
+.prose p {
+  margin: 0 0 1em;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+.faq {
+  display: grid;
+  gap: 10px;
+  max-width: 760px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.faqItem {
+  background: #fffdf8;
+  border: 1px solid var(--shop-border);
+  border-radius: 14px;
+  padding: 0;
+}
+
+.faqItem summary {
+  cursor: pointer;
+  padding: 16px 18px;
+  font-weight: 800;
+  font-size: 15px;
+  min-height: 44px;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.faqItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.faqItem summary::after {
+  content: "+";
+  color: var(--shop-primary-safe);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.faqItem[open] summary::after {
+  content: "−";
+}
+
+.faqAnswer {
+  padding: 0 18px 16px;
+  color: var(--shop-muted);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.hoursList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 420px;
+  display: grid;
+  gap: 2px;
+}
+
+.hoursRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--shop-border);
+  font-size: 15px;
+}
+
+.hoursDay {
+  font-weight: 800;
+}
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.galleryTile {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--shop-radius-sm);
+  background: #efe6d4;
+}
+
+@media (min-width: 720px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .galleryGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.reviewList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 860px) {
+  .reviewList {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.reviewCard {
+  background: #fffdf8;
+  border: 1px solid var(--shop-border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.reviewTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.reviewStars {
+  color: var(--shop-primary-safe);
+  letter-spacing: 0.1em;
+  font-size: 14px;
+}
+
+.reviewAuthor {
+  font-size: 13px;
+  color: var(--shop-muted);
+}
+
+.reviewComment {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.reviewSummary {
+  color: var(--shop-muted);
+  margin: 0 0 20px;
+}
+
+.highlights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  max-width: 720px;
+}
+
+.highlights li {
+  padding: 12px 14px;
+  background: #fffdf8;
+  border: 1px solid var(--shop-border);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.pointer {
+  max-width: 720px;
+  padding: 18px 20px;
+  background: #fffdf8;
+  border: 1px solid var(--shop-border);
+  border-radius: 14px;
+  line-height: 1.7;
+}
+
+.pointer a {
+  color: var(--shop-primary-safe);
+  font-weight: 800;
+}
+
+.pageSection {
+  padding: 40px 0;
+}
+
+.pageSection + .pageSection {
+  border-top: 1px solid var(--shop-border);
+}
+
+/* Request forms (WorkflowForm) — one column, 44px targets, the merchant's primary colour on the submit. */
+.formIntro {
+  max-width: 640px;
+  margin: 0 0 20px;
+  color: var(--shop-muted);
+  font-size: 16px;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.formRow {
+  display: grid;
+  gap: 6px;
+}
+
+.formLabel {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--shop-muted);
+}
+
+.formInput {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius-sm);
+  background: #fffdf8;
+  color: var(--shop-fg);
+  font: inherit;
+  font-size: 16px;
+}
+
+.formInput:focus-visible {
+  outline: 2px solid var(--shop-primary-safe);
+  outline-offset: 1px;
+}
+
+.formHint {
+  font-size: 13px;
+  color: var(--shop-muted);
+}
+
+.submit {
+  min-height: 48px;
+  justify-self: start;
+}
+
+@media (max-width: 560px) {
+  .submit {
+    width: 100%;
+  }
+}
+
+.notice {
+  margin: 20px auto 0;
+}
+
+/* Gallery layouts (layouts.ts): PAIRS = two-up with Before / After captions; STRIP = wide photos stacked. */
+.galleryFigure {
+  margin: 0;
+  position: relative;
+}
+
+.galleryGrid[data-layout="PAIRS"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.galleryGrid[data-layout="STRIP"] {
+  grid-template-columns: 1fr;
+}
+
+.galleryGrid[data-layout="STRIP"] .galleryTile {
+  aspect-ratio: 16 / 9;
+}
+
+.galleryCaption {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(14, 10, 5, 0.75);
+  color: #fff9ee;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

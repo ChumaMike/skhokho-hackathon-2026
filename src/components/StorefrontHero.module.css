@@ -1,0 +1,144 @@
+/* All colour/radius values here come from the --store-* tokens injected on
+   StorefrontView's scoped wrapper (.themeScope) — this stylesheet never
+   hardcodes a brand colour and never reads --chalk/--ink/--amber. */
+
+.hero {
+  position: relative;
+  border-radius: var(--store-radius-card);
+  overflow: hidden;
+  margin-bottom: var(--store-space-unit, 16px);
+  background-size: cover;
+  background-position: center;
+  min-height: 220px;
+  display: flex;
+  align-items: flex-end;
+}
+
+/*
+ * Live-tested against a near-white photo (a pale salon-interior tone) —
+ * the previous gradient (0.72 -> 0.15 -> transparent) left its TOP stop
+ * almost uncovered, and the heading sits at the top of this box (content
+ * flows top-down; the box itself is bottom-anchored by .hero's
+ * align-items:flex-end). A long name/description pushes the heading even
+ * higher into that weak zone. Floor raised to 0.6 everywhere (never fully
+ * transparent) — the minimum opacity that keeps white text >=4.5:1 against
+ * a worst-case pure-white background (computed: 255*(1-0.6)=102 ->
+ * relative luminance ~0.133 -> contrast ~5.7:1). Still visibly a gradient
+ * (0.6 -> 0.82), still lets a dark photo show through at the very top.
+ */
+.scrim {
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.6) 100%);
+  color: #fff;
+}
+
+.heroName,
+.heroMeta,
+.heroDescription {
+  margin: 0 0 4px;
+}
+
+/*
+ * Length-aware size: --hero-name-len (set inline per business, see
+ * StorefrontHero.tsx) is the name's character count. A normal name
+ * (~10-25 chars) clamps to the unchanged 28px ceiling; a long real name
+ * (10-12+ words, 60-80+ chars) shrinks toward the 18px floor, which fits
+ * more characters per line and meaningfully cuts the wrapped line count
+ * — no truncation, no horizontal overflow, still the merchant's full name.
+ */
+.heroName {
+  font-size: clamp(18px, calc(32px - 0.2px * var(--hero-name-len, 15)), var(--text-xl));
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+}
+
+.heroDescription {
+  font-size: var(--text-sm);
+  opacity: 0.92;
+}
+
+.heroColourBand {
+  border-radius: var(--store-radius-card);
+  padding: 28px 20px;
+  margin-bottom: var(--store-space-unit, 16px);
+  background: var(--store-primary-safe);
+  color: var(--store-on-primary);
+  text-align: center;
+}
+
+.heroNameOnPrimary {
+  font-size: clamp(18px, calc(32px - 0.2px * var(--hero-name-len, 15)), var(--text-xl));
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  margin: 0 0 4px;
+}
+
+.heroMetaOnPrimary,
+.heroDescriptionOnPrimary {
+  margin: 0 0 4px;
+  font-size: var(--text-sm);
+  opacity: 0.85;
+}
+
+.heroLogoBand {
+  border-radius: var(--store-radius-card);
+  padding: 24px 20px;
+  margin-bottom: var(--store-space-unit, 16px);
+  background: var(--store-page-bg);
+  border: var(--store-card-border-width) solid var(--store-page-border);
+  text-align: center;
+}
+
+.heroLogoImage {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: var(--store-radius-card);
+  margin: 0 auto 12px;
+}
+
+.heroLogoFallback {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--store-radius-card);
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--store-heading-font);
+  font-size: var(--text-xl);
+  background: var(--store-primary-safe);
+  color: var(--store-on-primary);
+}
+
+.heroNameOnSurface {
+  font-size: clamp(18px, calc(32px - 0.2px * var(--hero-name-len, 15)), var(--text-xl));
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  margin: 0;
+  color: var(--store-page-fg);
+}
+
+.heroCta {
+  margin-top: 14px;
+}
+
+/* Owner/AI-authored kicker line (StorefrontContent.hero.headline) shown
+   above the business name — optional, so a business with none set never
+   gets extra DOM here. Reuses whichever text colour its band already uses
+   by inheriting currentColor rather than hardcoding a shade. */
+.heroKicker {
+  margin: 0 0 4px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}

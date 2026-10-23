@@ -1,0 +1,20 @@
+.optional {
+  color: var(--dust);
+  font-weight: 400;
+}
+
+.nameRow {
+  display: flex;
+  gap: 12px;
+}
+
+.nameRow .field {
+  flex: 1;
+}
+
+.footer {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  text-align: center;
+  margin-top: 16px;
+}

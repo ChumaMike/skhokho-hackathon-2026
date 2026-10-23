@@ -1,0 +1,167 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.summaryColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryColumn .section {
+  background: var(--store-page-bg-raised, var(--store-page-bg));
+  border: 1px solid var(--store-page-border);
+  border-radius: var(--store-radius-card);
+  padding: 16px;
+  margin-bottom: 0;
+}
+
+@media (min-width: 860px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .formColumn {
+    flex: 1 1 auto;
+  }
+
+  .summaryColumn {
+    flex: 0 0 320px;
+    position: sticky;
+    top: 24px;
+  }
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  font-size: var(--text-lg);
+  color: var(--store-page-fg);
+  margin: 0 0 10px;
+}
+
+.reviewLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--text-sm);
+  color: var(--store-page-fg);
+  padding: 4px 0;
+}
+
+.reviewLineMuted {
+  color: var(--store-page-muted);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--store-page-fg);
+  font-size: var(--text-sm);
+  padding: 3px 0;
+}
+
+.summaryTotalRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--store-page-fg);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px solid var(--store-page-border);
+}
+
+.editLink {
+  font-size: var(--text-sm);
+  color: var(--store-page-accent);
+}
+
+.fulfilmentChoice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fulfilmentOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--store-radius-card);
+  border: 1px solid var(--store-page-border);
+  cursor: pointer;
+  color: var(--store-page-fg);
+}
+
+.fulfilmentOptionSelected {
+  border-color: var(--store-primary);
+}
+
+.field {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--store-page-muted);
+  margin-bottom: 4px;
+}
+
+.fieldError {
+  color: #c0392b;
+  font-size: var(--text-xs);
+  margin-top: 4px;
+}
+
+.consentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--text-sm);
+  color: var(--store-page-fg);
+  margin: 8px 0;
+}
+
+.deliveryAreaInfo {
+  font-size: var(--text-xs);
+  color: var(--store-page-muted);
+  margin: 4px 0 0;
+}
+
+.submitRow {
+  margin-top: 20px;
+}
+
+.submitButton {
+  width: 100%;
+}
+
+.termsStatus {
+  font-size: var(--text-sm);
+  color: var(--store-page-fg);
+}

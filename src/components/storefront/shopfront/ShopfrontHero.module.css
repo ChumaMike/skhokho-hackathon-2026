@@ -1,0 +1,85 @@
+.hero {
+  min-height: 560px;
+  position: relative;
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--shop-board), var(--shop-ink));
+}
+
+.hero[data-has-image="true"] {
+  background:
+    linear-gradient(90deg, rgba(14, 10, 5, 0.84), rgba(14, 10, 5, 0.42) 48%, rgba(14, 10, 5, 0.12)),
+    var(--hero-image) center/cover;
+}
+
+.content {
+  padding: 90px 0 70px;
+  color: var(--shop-cream);
+  max-width: 680px;
+}
+
+.heading {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 6vw, 68px);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 16px;
+}
+
+.sub {
+  font-size: 17px;
+  max-width: 560px;
+  color: #eadfc9;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--shop-cream);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 560px) {
+  .hero {
+    min-height: 460px;
+  }
+
+  .content {
+    padding: 65px 0 50px;
+  }
+
+  .sub {
+    font-size: 15px;
+  }
+}
+
+/* Compact hero (FOOD_MENU template): a short banner so the menu starts on the first screen. */
+.hero[data-size="compact"] {
+  min-height: 340px;
+}
+
+.hero[data-size="compact"] .content {
+  padding: 56px 0 40px;
+}
+
+.hero[data-size="compact"] .heading {
+  font-size: clamp(30px, 5vw, 52px);
+}
+
+@media (max-width: 560px) {
+  .hero[data-size="compact"] {
+    min-height: 0;
+  }
+
+  .hero[data-size="compact"] .content {
+    padding: 36px 0 28px;
+  }
+}

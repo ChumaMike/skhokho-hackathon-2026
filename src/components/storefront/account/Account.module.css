@@ -1,0 +1,164 @@
+/* Customer account surfaces — mobile first, same storefront theme tokens as
+   Basket/Checkout (rendered inside CheckoutShell's .themeScope). */
+
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid var(--store-border, rgba(0, 0, 0, 0.1));
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--store-surface, transparent);
+  display: grid;
+  gap: 10px;
+}
+
+.lede {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.muted {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.codeInput {
+  font-size: 28px;
+  letter-spacing: 8px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.linkButton {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.codeBadge {
+  display: inline-block;
+  font-family: var(--font-space-mono, monospace);
+  font-size: 26px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px dashed currentColor;
+}
+
+.orderList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.orderHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.orderNumber {
+  font-weight: 700;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.chipLive {
+  background: var(--store-primary, #e8a020);
+  color: var(--store-on-primary, #111);
+  border-color: transparent;
+}
+
+.chipDone {
+  opacity: 0.7;
+}
+
+.itemLines {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions a,
+.actions button {
+  min-height: 44px;
+}
+
+.stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stamp {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+
+.stampFilled {
+  background: var(--store-primary, #e8a020);
+  border-color: var(--store-primary, #e8a020);
+  color: var(--store-on-primary, #111);
+}
+
+.reasonSelect {
+  min-height: 44px;
+}
+
+@media (min-width: 720px) {
+  .card {
+    padding: 20px;
+  }
+}

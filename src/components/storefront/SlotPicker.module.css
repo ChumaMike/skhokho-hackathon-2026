@@ -1,0 +1,46 @@
+.picker {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dateInput {
+  max-width: 220px;
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--store-page-muted);
+  margin: 0;
+}
+
+.slotGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slot {
+  min-width: 64px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--store-page-border);
+  background: var(--store-page-bg);
+  color: var(--store-page-fg);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+.slot:hover {
+  border-color: var(--store-page-accent);
+}
+
+.slotSelected {
+  border-color: var(--store-page-accent);
+  background: var(--store-page-accent);
+  color: var(--ink);
+  font-weight: 700;
+}

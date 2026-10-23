@@ -1,0 +1,331 @@
+/*
+ * Onboarding interview dialog.
+ *
+ * Like every Base UI dialog in this app it portals to <body>, which puts it
+ * outside the console's `.shell` — so the warm "chalk workspace" tokens
+ * globals.css pins there never reach it. They're pinned again here, with
+ * `background` and `color` re-declared alongside them, because a var() is
+ * substituted where it is declared and not where it is inherited (the rule
+ * spelled out on `.shell` in globals.css). Pinned unconditionally rather
+ * than scoped to `body:has(.console-sidebar-anchor)`: this dialog only ever
+ * opens on the console, and it should look the same whatever the viewer's OS
+ * theme is.
+ */
+.popup {
+  --ink: #fbf6ec;
+  --board: #fffdf8;
+  --edge: #e3d4b4;
+  --amber: #a8650c;
+  --veld: #3f6b34;
+  --oxide: #9a3b25;
+  --chalk: #241b0f;
+  --dust: #6e5d42;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 24px);
+  max-width: 540px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--board);
+  color: var(--chalk);
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  padding: 24px 20px;
+  z-index: 50;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 10, 5, 0.72);
+  z-index: 40;
+}
+
+.header {
+  margin-bottom: 14px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 0 0 8px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.12;
+  margin: 0;
+}
+
+.why {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin: 8px 0 0;
+}
+
+.progress {
+  height: 4px;
+  border-radius: 100px;
+  background: var(--edge);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+  transition: width 200ms ease;
+}
+
+/* Chips are the primary input — big enough to hit with a thumb without
+ * looking, which is the whole reason this interview isn't a form. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.chip {
+  min-height: var(--touch-min);
+  padding: 0 16px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  background: var(--ink);
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.chip:hover {
+  border-color: var(--amber);
+}
+
+/* Selection is carried by fill + border + weight, never by colour alone —
+ * aria-pressed covers screen readers, this covers colour-blind viewers. */
+.chipOn {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+}
+
+.noteLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin-bottom: 6px;
+}
+
+.optional {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  color: var(--dust);
+}
+
+.note {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: var(--ink);
+  color: var(--chalk);
+  font-family: inherit;
+  font-size: var(--text-base);
+  resize: vertical;
+}
+
+.note::placeholder {
+  color: var(--dust);
+}
+
+.error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--oxide);
+  background: color-mix(in srgb, var(--oxide) 12%, transparent);
+  color: var(--chalk);
+  font-size: var(--text-sm);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.primary,
+.secondary,
+.ghost {
+  min-height: var(--touch-min);
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.primary {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--chalk);
+  border-color: var(--edge);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--dust);
+  padding: 0 4px;
+  text-decoration: underline;
+}
+
+.primary:disabled,
+.secondary:disabled,
+.ghost:disabled {
+  opacity: 0.55;
+}
+
+.brief {
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--ink);
+  padding: 16px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.briefLine {
+  margin: 0 0 6px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.briefLine:last-child {
+  margin-bottom: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .backdrop {
+    transition: opacity 150ms ease;
+  }
+  .backdrop[data-starting-style],
+  .backdrop[data-ending-style] {
+    opacity: 0;
+  }
+  .popup {
+    transition: opacity 150ms ease, transform 150ms ease;
+  }
+  .popup[data-starting-style],
+  .popup[data-ending-style] {
+    opacity: 0;
+    transform: translate(-50%, -46%);
+  }
+}
+
+/* Phone: the dialog becomes a bottom sheet rather than a small box floating
+ * in the middle — more room for chips, and the action row lands near the
+ * thumb instead of the centre of the screen. */
+@media (max-width: 520px) {
+  .popup {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--board);
+    padding-top: 12px;
+  }
+
+  .primary {
+    flex: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .popup[data-starting-style],
+    .popup[data-ending-style] {
+      transform: translateY(12px);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Resume card — shown in place of the dialog once the owner has said "remind
+ * me later". Unlike `.popup` this renders inline inside `.shell`, so it
+ * inherits the console's tokens and must NOT pin its own.
+ * ------------------------------------------------------------------------- */
+.resumeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  margin-bottom: 14px;
+  color: var(--chalk);
+  transition: border-color 150ms ease;
+}
+
+.resumeCard:hover {
+  border-color: var(--amber);
+}
+
+.resumeTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+}
+
+.resumeBody {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  line-height: 1.45;
+}
+
+.resumeCta {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--amber);
+  margin-top: 2px;
+}

@@ -1,0 +1,300 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.appointment {
+  padding: 16px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.serviceName {
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.customer {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  color: var(--dust);
+}
+
+.statusScheduled {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirmBtn,
+.completeBtn,
+.cancelBtn {
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmBtn {
+  border: 1px solid var(--amber);
+  background: transparent;
+  color: var(--amber);
+}
+
+.completeBtn {
+  border: 1px solid var(--veld);
+  background: transparent;
+  color: var(--veld);
+}
+
+.cancelBtn {
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--dust);
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--dust);
+}
+
+.reviewSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 4px;
+}
+
+.sectionHint {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 12px;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reviewItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Week calendar — a scannable week, not a raw list. Each day is a column of
+ * chronological chips (not pixel-positioned by time of day: this repo has
+ * no configured business-hours/slot-grid concept yet to position against
+ * honestly, so "ordered within the day, colour-coded by status" is the
+ * truthful version of "colour/status cues help staff scan the day" rather
+ * than implying calendar precision that isn't backed by data).
+ * ------------------------------------------------------------------------- */
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.weekLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+}
+
+.weekNav {
+  display: flex;
+  gap: 6px;
+}
+
+.weekNavBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.weekNavBtn:hover {
+  border-color: var(--amber);
+}
+
+.layout {
+  display: block;
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 120px;
+  padding: 10px 8px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+}
+
+.dayColumnToday {
+  border-color: var(--amber);
+}
+
+.dayHeader {
+  font-size: var(--text-xs);
+  color: var(--dust);
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.dayHeader b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--chalk);
+}
+
+.dayColumnToday .dayHeader,
+.dayColumnToday .dayHeader b {
+  color: var(--amber);
+}
+
+.chip {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--edge);
+  background: var(--ink);
+  text-decoration: none;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.chip b {
+  display: block;
+  color: var(--chalk);
+  font-size: 12px;
+}
+
+.chip span {
+  color: var(--dust);
+  font-family: var(--font-mono);
+}
+
+.chipSelected {
+  border-color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 12%, var(--ink));
+}
+
+.chipConfirmed {
+  border-left: 3px solid var(--amber);
+}
+
+.chipCompleted {
+  border-left: 3px solid var(--veld);
+  opacity: 0.75;
+}
+
+.chipCancelled,
+.chipNoShow {
+  border-left: 3px solid var(--oxide);
+  opacity: 0.6;
+}
+
+.dayEmpty {
+  font-size: 11px;
+  color: var(--dust);
+  text-align: center;
+  padding-top: 8px;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: start;
+  }
+}
+
+.detailPanel {
+  position: sticky;
+  top: 20px;
+}
+
+.emptyDetail {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--dust);
+  font-size: var(--text-sm);
+}

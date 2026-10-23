@@ -1,0 +1,89 @@
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 4vw, 36px);
+  margin: 0;
+  color: var(--shop-fg);
+}
+
+.serviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 28px 0 0;
+}
+
+.serviceCard {
+  padding: 22px;
+  border-left: 3px solid var(--shop-primary-safe);
+}
+
+.serviceMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.serviceImage {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.serviceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.serviceName {
+  font-weight: 700;
+  color: var(--shop-fg);
+}
+
+.serviceDesc {
+  color: var(--shop-muted);
+  font-size: 13px;
+}
+
+.serviceMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.servicePrice {
+  color: var(--shop-fg);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.durationBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--shop-primary-safe) 14%, transparent);
+  color: var(--shop-primary-safe);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bookingForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--shop-border);
+}
+
+.bookButton {
+  width: 100%;
+}

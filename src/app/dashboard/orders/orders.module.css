@@ -1,0 +1,305 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order {
+  padding: 16px;
+}
+
+.orderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.orderNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.total {
+  font-family: var(--font-display);
+  color: var(--amber);
+}
+
+.items {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 12px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  color: var(--dust);
+  border: 1px solid var(--edge);
+}
+
+.statusCompleted {
+  color: var(--veld);
+  border-color: var(--veld);
+}
+
+.statusCancelled {
+  color: var(--oxide);
+  border-color: var(--oxide);
+}
+
+.completeBtn,
+.cancelBtn {
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.completeBtn {
+  border: 1px solid var(--amber);
+  background: transparent;
+  color: var(--amber);
+}
+
+.cancelBtn {
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--dust);
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--dust);
+}
+
+.reviewSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 4px;
+}
+
+.sectionHint {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 12px;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reviewItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Status tabs — filter the order list without leaving the page (plain
+ * links carrying ?status=, same server-rendered-filter pattern already
+ * used by /dashboard/customers?view=lapsed elsewhere in this app).
+ * ------------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 20px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--dust);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tab:hover {
+  border-color: var(--amber);
+  color: var(--chalk);
+}
+
+.tabActive {
+  background: var(--ink);
+  color: var(--chalk);
+  border-color: var(--ink);
+}
+
+.tabActive:hover {
+  color: var(--chalk);
+}
+
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* ---------------------------------------------------------------------------
+ * Desktop layout: order list (left) + selected-order detail panel (right).
+ * Below the breakpoint the list is the whole page and each row carries its
+ * own inline actions (unchanged mobile behaviour).
+ * ------------------------------------------------------------------------- */
+
+.layout {
+  display: block;
+}
+
+.rowLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.orderSelected {
+  border-color: var(--amber);
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .list {
+    gap: 8px;
+  }
+
+  /* On desktop the row's own action buttons move into the detail panel
+   * instead of being repeated on every row. */
+  .rowActionsInline {
+    display: none;
+  }
+}
+
+.detailPanel {
+  position: sticky;
+  top: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.detailMeta {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin: 2px 0 0;
+}
+
+.detailItems {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+}
+
+.detailItemRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--text-sm);
+}
+
+.detailItemName {
+  color: var(--chalk);
+}
+
+.detailItemPrice {
+  font-family: var(--font-mono);
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+.detailCustomer {
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.detailCustomer span {
+  color: var(--dust);
+}
+
+.detailTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+}
+
+.detailActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailActions .completeBtn,
+.detailActions .cancelBtn {
+  width: 100%;
+  min-height: var(--touch-min);
+}
+
+.emptyDetail {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--dust);
+  font-size: var(--text-sm);
+}

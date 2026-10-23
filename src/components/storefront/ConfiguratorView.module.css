@@ -1,0 +1,161 @@
+/*
+ * Food Menu Domain Foundation §10/§22/§23 — mobile-first, one column,
+ * large touch targets. Colours come from the ancestor .themeScope's
+ * --store-* tokens (CheckoutShell), never --chalk/--ink/--dust/--amber
+ * directly — same rule every other storefront component already follows.
+ */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--store-radius-card);
+  margin-bottom: 4px;
+}
+
+.description {
+  color: var(--store-page-muted);
+  font-size: var(--text-sm);
+  margin: 0 0 8px;
+}
+
+.group {
+  border: 1px solid var(--store-page-border);
+  border-radius: var(--store-radius-card);
+  padding: 14px;
+  margin: 0 0 14px;
+}
+
+.groupLegend {
+  font-weight: 600;
+  color: var(--store-page-fg);
+  padding: 0 4px;
+}
+
+.groupHint {
+  font-weight: 400;
+  color: var(--store-page-muted);
+  font-size: var(--text-xs);
+}
+
+.groupError {
+  color: var(--oxide);
+  font-size: var(--text-xs);
+  margin: 6px 0 0;
+}
+
+.optionList {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--touch-min);
+  padding: 8px 4px;
+  cursor: pointer;
+}
+
+.optionRow[data-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.optionInput {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--store-action-primary);
+}
+
+.optionName {
+  flex: 1;
+  color: var(--store-page-fg);
+}
+
+.optionPrice {
+  color: var(--store-page-muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.quantityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px;
+}
+
+.quantityLabel {
+  color: var(--store-page-fg);
+  font-weight: 600;
+}
+
+.quantityStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--store-page-border);
+  border-radius: var(--store-radius-button);
+  overflow: hidden;
+}
+
+.quantityButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--store-page-fg);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.quantityValue {
+  min-width: 32px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--store-page-fg);
+}
+
+/* Pinned near the bottom of the viewport so the total + Add action never
+ * scroll out of reach while a customer works through several option
+ * groups (§23). Not `position: fixed` full-bleed — stays inside the same
+ * comfortable column width as the rest of the page, at every viewport. */
+.footer {
+  position: sticky;
+  bottom: 0;
+  margin: 12px -16px -16px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--store-page-bg);
+  border-top: 1px solid var(--store-page-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--text-sm);
+  color: var(--store-page-muted);
+}
+
+.totalValue {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--store-page-fg);
+}

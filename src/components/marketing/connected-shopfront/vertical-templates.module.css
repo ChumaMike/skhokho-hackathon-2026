@@ -1,0 +1,348 @@
+/* Distinct console/phone widget shapes for the Salon, Retail and Services
+ * demo templates — Food keeps the original bar-chart/order-rows/menu-line
+ * shapes in connected-shopfront.module.css unchanged. These three read the
+ * same --ink/--board/--edge/--amber/--veld/--oxide/--chalk/--dust tokens
+ * (defined on .page) since they only ever render inside ConsoleMock/
+ * PhoneStorefront, which only ever render inside a .page-scoped section. */
+
+/* ---------- Salon: week calendar grid (console) ---------- */
+
+.calendarCard {
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  padding: 11px;
+  margin-top: 9px;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.calendarHeader small {
+  color: var(--dust);
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: 26px repeat(5, 1fr);
+  gap: 3px;
+}
+
+.calendarDayLabel {
+  font-size: 7px;
+  color: var(--dust);
+  text-align: center;
+  padding-bottom: 3px;
+}
+
+.calendarHourLabel {
+  font-size: 7px;
+  color: var(--dust);
+  display: flex;
+  align-items: center;
+}
+
+.calendarCell {
+  height: 22px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--edge) 45%, transparent);
+}
+
+.calendarChip {
+  height: 22px;
+  border-radius: 4px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  font-size: 7px;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--amber);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.calendarChipNew {
+  background: var(--veld);
+  color: var(--chalk);
+}
+
+/* ---------- Salon: service rows (phone) ---------- */
+
+.serviceRow {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #eadfca;
+  align-items: center;
+}
+
+.serviceDot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 40% 35%, #f2c25b 0 30%, #a5623a 31% 62%, #6b3821 63%);
+}
+
+.serviceRow div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.serviceRow b {
+  font-size: 10px;
+}
+
+.serviceRow small {
+  font-size: 7px;
+  color: #786a55;
+}
+
+.serviceRow strong {
+  font-size: 9px;
+}
+
+.bookBtn {
+  border: 0;
+  border-radius: 7px;
+  background: #e8a020;
+  padding: 7px 10px;
+  font-size: 8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+/* ---------- Retail: donut chart (console) ---------- */
+
+.donutCard {
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  padding: 11px;
+  margin-top: 9px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.donutChart {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.donutChart::after {
+  content: "";
+  position: absolute;
+  inset: 13px;
+  border-radius: 50%;
+  background: var(--board);
+}
+
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 8px;
+  min-width: 0;
+}
+
+.donutLegend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--dust);
+}
+
+.donutSwatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.swatchAmber {
+  background: var(--amber);
+}
+
+.swatchVeld {
+  background: var(--veld);
+}
+
+.swatchOxide {
+  background: var(--oxide);
+}
+
+.swatchDust {
+  background: var(--dust);
+}
+
+/* ---------- Retail: restock list (console) ---------- */
+
+.restockRows {
+  margin-top: 7px;
+}
+
+.restockRows > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px;
+  border-top: 1px solid var(--edge);
+  padding: 8px 1px;
+  align-items: center;
+  font-size: 9px;
+}
+
+.restockRows span {
+  font-family: var(--font-mono);
+  color: var(--oxide);
+}
+
+/* ---------- Retail: quantity steppers (phone) ---------- */
+
+.stepperRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #eadfca;
+  align-items: center;
+}
+
+.stepperRow div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.stepperRow b {
+  font-size: 10px;
+}
+
+.stepperRow small {
+  font-size: 7px;
+  color: #786a55;
+}
+
+.stepperRow strong {
+  font-size: 9px;
+}
+
+.stepperControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.stepperControls button {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid #dfd3bd;
+  background: #fff;
+  font-weight: 900;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.stepperQty {
+  font-size: 9px;
+  font-weight: 800;
+  min-width: 12px;
+  text-align: center;
+}
+
+/* ---------- Services: today's jobs timeline (console) ---------- */
+
+.timelineCard {
+  margin-top: 9px;
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineJob {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 9px;
+  padding: 8px 0;
+  border-top: 1px solid var(--edge);
+}
+
+.timelineJob:first-child {
+  border-top: 0;
+}
+
+.timelineTime {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dust);
+  padding-top: 1px;
+}
+
+.timelineLabel {
+  font-size: 10px;
+  font-weight: 700;
+  display: block;
+}
+
+.timelineAddress {
+  font-size: 8px;
+  color: var(--dust);
+  display: block;
+  margin-top: 1px;
+}
+
+.timelineNext {
+  display: inline-block;
+  background: var(--amber);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: 7px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+/* ---------- Services: package cards (phone) ---------- */
+
+.packageCards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+.packageCard {
+  border: 1px solid #eadfca;
+  border-radius: 10px;
+  padding: 10px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.packageCard b {
+  font-size: 11px;
+}
+
+.packageCard small {
+  font-size: 8px;
+  color: #786a55;
+}
+
+.packageCard strong {
+  font-size: 10px;
+  margin-top: 4px;
+  color: #7e4707;
+}

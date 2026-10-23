@@ -1,0 +1,184 @@
+.title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin: 8px 0 4px;
+}
+
+.sub {
+  color: var(--dust);
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.filter {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  color: var(--dust);
+  font-size: 13px;
+}
+
+.filterActive {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+}
+
+@media (min-width: 720px) {
+  .row {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+
+.rowTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.rowMeta {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--dust);
+}
+
+.phone {
+  font-family: var(--font-mono);
+}
+
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  color: var(--dust);
+}
+
+.chipNew {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.chipWon {
+  border-color: var(--veld);
+  color: var(--veld);
+}
+
+.chipClosed {
+  opacity: 0.7;
+}
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--dust);
+}
+
+.detailGrid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 860px) {
+  .detailGrid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.card {
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  font-size: 14px;
+}
+
+.facts dt {
+  color: var(--dust);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.message {
+  white-space: pre-line;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.photos img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.statusRow form {
+  display: inline;
+}
+
+.statusBtn {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--dust);
+  margin: 0;
+}

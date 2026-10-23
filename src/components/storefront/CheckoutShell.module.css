@@ -1,0 +1,40 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--store-primary);
+}
+
+.name {
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  font-size: var(--text-lg);
+  margin: 0;
+  color: var(--store-page-fg);
+}
+
+.backLink {
+  font-size: var(--text-sm);
+  color: var(--store-page-muted);
+  white-space: nowrap;
+}
+
+.pageTitle {
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  font-size: var(--text-xl);
+  margin: 0 0 16px;
+  color: var(--store-page-fg);
+}
+
+/* Doubled class beats the plain-.column rule from globals.css regardless
+   of stylesheet order, without an !important. Desktop-only — mobile stays
+   the storefront's standard 520px single column. */
+@media (min-width: 860px) {
+  .wideColumn.wideColumn {
+    max-width: 900px;
+  }
+}

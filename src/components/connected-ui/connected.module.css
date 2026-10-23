@@ -1,0 +1,125 @@
+/* Skhokho Connected: scoped presentation layer. Never override :root, html, body, or app theme. */
+.root {
+  --c-ink:#0e0a05;--c-board:#171009;--c-edge:#2e2011;--c-amber:#e8a020;
+  --c-veld:#5b8c3a;--c-oxide:#c8452f;--c-chalk:#f5efe6;--c-dust:#8a7b68;
+  --c-paper:#fbf7f0;--c-white:#fffdf8;--c-line:#e5d9c7;--c-muted:#766a5b;
+  font-family:var(--font-body),Archivo,system-ui,sans-serif; color:var(--c-ink);line-height:1.45;
+  font-size:16px;min-width:0;box-sizing:border-box;
+}
+.root *,.root *::before,.root *::after{box-sizing:border-box}
+.root :is(h1,h2,h3,p){margin-top:0}.root h1,.root h2,.root h3{color:inherit}
+.root a{color:inherit;text-decoration:none}.root button{font:inherit;cursor:pointer}
+.root :focus-visible{outline:3px solid var(--c-amber);outline-offset:3px}
+.display{font-family:var(--font-display),"Archivo Black",Archivo,sans-serif;letter-spacing:-.038em;line-height:1.06}
+.mono{font-family:var(--font-mono),"Space Mono",monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:#9a6712}
+.muted{color:var(--c-muted)}.small{font-size:12px}.strong{font-weight:800}
+.button{min-height:44px;border:1px solid var(--c-line);background:var(--c-white);color:var(--c-ink);border-radius:10px;padding:11px 16px;display:inline-flex;justify-content:center;align-items:center;gap:8px;font-size:13px;font-weight:800;max-width:100%;text-align:center}
+.buttonPrimary{background:var(--c-amber);border-color:var(--c-amber);color:var(--c-ink)}
+.buttonDark{background:var(--c-ink);border-color:var(--c-ink);color:var(--c-chalk)}
+.button:focus-visible{outline-offset:3px}.button:disabled{cursor:not-allowed;opacity:.5}
+.page{width:100%;max-width:1620px;padding:clamp(18px,3vw,42px);margin:0 auto}
+.pageHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.pageTitle{font-size:clamp(26px,2.6vw,39px);margin:6px 0 7px;max-width:800px}.pageLead{color:var(--c-muted);margin:0;max-width:760px}
+.panel{background:var(--c-white);border:1px solid var(--c-line);border-radius:17px;overflow:hidden;box-shadow:0 8px 24px rgba(46,32,17,.045);min-width:0}
+.panelHead{padding:17px 19px;border-bottom:1px solid var(--c-line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.panelHead h2{font-size:16px;margin:0}.panelBody{padding:18px}
+.grid{display:grid;gap:16px}.two{grid-template-columns:minmax(0,1.55fr) minmax(290px,.85fr)}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+/* Tone chips read the documented --tone-* tokens from globals.css. The pack
+   shipped fifteen loose hexes here; naming them once globally is what keeps
+   DESIGN.md's no-stray-colours rule true while still allowing a queue to read
+   new -> preparing -> ready -> complete. */
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--tone-neutral-bg);color:var(--tone-neutral-fg);border:1px solid transparent;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;width:max-content;max-width:100%}
+.pill[data-tone="new"]{background:var(--tone-new-bg);color:var(--tone-new-fg)}
+.pill[data-tone="preparing"]{background:var(--tone-preparing-bg);color:var(--tone-preparing-fg)}
+.pill[data-tone="ready"],.pill[data-tone="complete"]{background:var(--tone-ready-bg);color:var(--tone-ready-fg)}
+.pill[data-tone="warning"]{background:var(--tone-warning-bg);color:var(--tone-warning-fg)}
+/* Critical is only 1.18:1 from warning as a fill, so it also carries a border
+   — severity must never rest on hue alone. */
+.pill[data-tone="critical"]{background:var(--tone-critical-bg);color:var(--tone-critical-fg);border-color:var(--tone-critical-edge);font-weight:900}
+.metric{padding:18px;border:1px solid var(--c-line);border-radius:16px;background:var(--c-white);min-width:0}
+.metricLabel{font-size:12px;color:var(--c-muted);display:block}.metricValue{font-family:var(--font-display),"Archivo Black",sans-serif;letter-spacing:-.03em;font-size:clamp(20px,2vw,29px);display:block;margin:10px 0 6px;word-break:break-word}.metricDetail{font-size:11px;color:var(--c-muted)}
+.notice{border:1px solid var(--tone-new-bg);background:var(--tone-new-bg);border-radius:16px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px;flex-wrap:wrap}
+.notice h2{font-size:18px;margin:0 0 5px;color:var(--tone-new-fg)}.notice p{margin:0;color:var(--tone-new-fg)}
+/* A critical priority promotes the whole banner, not just its chip. */
+.notice[data-tone="critical"]{background:var(--tone-critical-bg);border-color:var(--tone-critical-edge)}
+.notice[data-tone="critical"] :is(h2,p){color:var(--tone-critical-fg)}
+.list{display:grid}.listRow{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--c-line)}.listRow:last-child{border-bottom:0}.listRowText{flex:1;min-width:0}.listRowText strong{display:block}.listRowText span{display:block;font-size:12px;color:var(--c-muted);margin-top:2px}
+.tableWrap{width:100%;overflow-x:auto}.table{border-collapse:collapse;width:100%;min-width:520px;font-size:12px}.table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--c-muted);background:#f7f1e9;padding:13px 14px}.table td{padding:14px;border-bottom:1px solid #eee4d7;vertical-align:middle}.table tr:last-child td{border-bottom:0}.table tbody tr:hover td{background:#fff8ea}
+.tableLink{font-weight:800;text-decoration:underline!important;text-underline-offset:3px}.empty{padding:32px 18px;text-align:center;color:var(--c-muted)}
+/* Desktop owner/manager shell. Pass pre-filtered nav from existing admin-modules.ts. */
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh;background:var(--c-paper);align-items:stretch}
+.sidebar{background:linear-gradient(160deg,#191107,#0e0a05 74%);color:var(--c-chalk);padding:23px 15px;display:flex;flex-direction:column;gap:12px}
+.brand{font-family:var(--font-display),"Archivo Black",sans-serif;font-size:22px;display:flex;align-items:center;gap:10px;padding:0 10px 9px}
+.brandIcon{width:31px;height:31px;border-radius:10px;background:var(--c-amber);color:var(--c-ink);display:grid;place-items:center;font-size:17px}
+.identity{margin:0 4px;padding:13px;border-radius:12px;background:#251a0e;border:1px solid #49331c;display:grid;gap:5px;font-size:13px}.identity small{color:#b9a994}
+.navHeading{color:#968169;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:17px 10px 6px}
+.navLink{padding:11px;border-radius:9px;display:flex;align-items:center;gap:10px;color:#ddd0bd!important;font-size:13px;font-weight:650;min-height:42px}.navLink:hover{background:#2a1e10}.navLink[data-active="true"]{background:#352412;color:#fff!important;box-shadow:inset 3px 0 var(--c-amber)}
+.sidebarFooter{margin-top:auto;padding:15px 10px 0;border-top:1px solid #45321c;font-size:12px;color:#c6b8a3}
+.sidebarFooter a{display:block;padding:8px 0}.topbar{min-height:68px;padding:12px clamp(18px,3vw,42px);background:#fffdf8;border-bottom:1px solid var(--c-line);display:flex;justify-content:space-between;align-items:center;gap:14px}
+.topbarHint{color:var(--c-muted);font-size:12px}.mobileNav{display:none}.workspace{min-width:0}.content{min-width:0}
+/* Orders and operations */
+.orderDetail{display:grid;gap:13px}.orderDetail h2{font-family:var(--font-display),"Archivo Black",sans-serif;font-size:25px;margin:0}.orderLine{display:flex;justify-content:space-between;gap:14px;font-size:13px}.orderOptions{font-size:12px;color:var(--c-muted);padding:2px 0 0 14px}.orderTotal{font-weight:900;border-top:1px solid var(--c-line);padding-top:14px}
+/* Column count follows however many the caller actually has. */
+.ticketBoard{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px}.ticket{border:1px solid #4b3622;border-radius:15px;background:#24180d;color:var(--c-chalk);padding:16px;display:flex;flex-direction:column;gap:15px;min-height:240px}.ticketTop{display:flex;justify-content:space-between;gap:10px}.ticket h3{font-size:20px;color:var(--c-chalk);margin:0}.ticketItem{border-bottom:1px solid #4b3622;padding:8px 0}.ticketOption{display:block;font-size:12px;color:#d1be9f;margin-left:12px}.ticketFooter{margin-top:auto}.ticketFooter :is(a,button,form){width:100%}
+.staffDark{background:var(--c-ink);color:var(--c-chalk);padding:clamp(16px,2.5vw,34px);min-height:100vh}.staffDark .eyebrow{color:var(--c-amber)}.staffDark .pageHeader h1{color:var(--c-chalk)}.staffDark .pageLead{color:#b6a38a}
+.posGrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.8fr);gap:18px}.posProducts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.posCard{background:#fffdf8;border:1px solid var(--c-line);border-radius:13px;padding:12px;display:grid;gap:8px}.posCard strong{font-size:14px}.posBasket{background:#fffdf8;border-radius:15px;padding:19px;align-self:start}
+.driver{max-width:480px;margin:0 auto;background:#fffdf8;color:var(--c-ink);border-radius:22px;padding:20px;display:grid;gap:14px}.driver .pageTitle{font-size:26px}.driverAddress{padding:14px;background:#f4ece0;border-radius:13px;font-size:18px;font-weight:800}.driverActions{display:grid;gap:8px}
+/* Merchant websites: isolated from console/admin look and from arbitrary merchant theme variables. */
+.store{--m-primary:#e8a020;--m-action-text:#0e0a05;min-height:100vh;background:#fbf7f0;color:#21190f}
+.storeHeader{padding:16px clamp(18px,4.5vw,70px);background:#141009;color:#f5efe6;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.storeBrand{font-family:var(--font-display),"Archivo Black",sans-serif;font-size:20px}.storeLinks{display:flex;align-items:center;gap:20px;font-size:13px}.storeAction{background:var(--m-primary);color:var(--m-action-text)!important;padding:12px 16px;border-radius:9px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;min-height:44px}
+.storeHero{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.86fr);background:#181108;color:#f5efe6;min-height:410px;position:relative;overflow:hidden}
+.storeHeroText{padding:clamp(28px,5.2vw,78px);align-self:center;position:relative;z-index:1}.storeHero h1{font-size:clamp(35px,4.6vw,68px);max-width:750px;margin:12px 0 15px}.storeHero p{max-width:550px;color:#d4c0a6;line-height:1.65}.storeHeroPhoto{min-height:320px;background:linear-gradient(90deg,#181108,transparent 22%),radial-gradient(circle at 80% 35%,#684122,#221509 60%);overflow:hidden}.storeHeroPhoto img{height:100%;width:100%;object-fit:cover;display:block}.storeHeroPhoto:empty{background:radial-gradient(circle at 56% 60%,#a66622 0,#4c301a 28%,#171009 75%)}
+.storeContent{width:min(1400px,100%);margin:0 auto;padding:45px clamp(18px,4vw,64px)}.storeSectionHead{display:flex;align-items:end;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:19px}.storeSectionHead h2{font-family:var(--font-display),"Archivo Black",sans-serif;font-size:clamp(27px,3vw,40px);margin:0}
+.storeCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.store[data-kind="salon"] .storeCards{grid-template-columns:repeat(3,minmax(0,1fr))}.storeCard{background:#fffdf8;border:1px solid #e5d9c7;border-radius:15px;overflow:hidden}.storeCard img{width:100%;height:185px;object-fit:cover;display:block}.storeCardArt{height:185px;background:radial-gradient(circle at 60% 45%,#bb7c33,#3a2111 46%,#191108)}.storeCardBody{padding:15px;display:grid;gap:9px}.storeCardBody h3{font-size:16px;margin:0}.storeCardBody p{font-size:12px;color:var(--c-muted);margin:0}.storeCardBottom{display:flex;justify-content:space-between;align-items:center;gap:10px}.storeCardBottom a{font-size:12px;font-weight:800;background:var(--m-primary);color:var(--m-action-text);padding:10px 12px;border-radius:8px;min-height:40px;display:grid;place-items:center}
+.storeAbout{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;background:#ece1d1;border-radius:18px;padding:clamp(23px,4vw,47px);margin-top:38px}.storeAbout p{max-width:580px;line-height:1.7}.storeFooter{background:#141009;color:var(--c-chalk);padding:27px clamp(18px,4vw,64px);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:12px}
+/* Setup / editor composition */
+.setup{background:var(--c-paper);min-height:100vh;display:grid;grid-template-columns:minmax(220px,260px) minmax(0,1fr) minmax(280px,350px)}
+.setupNav{background:var(--c-ink);color:var(--c-chalk);padding:27px 18px}.setupStep{display:block;padding:14px;border-left:2px solid #49341f;color:#b7a38a;font-size:13px}.setupStep[data-state="current"]{background:#342414;border-color:var(--c-amber);color:#fff}.setupStep[data-state="complete"]{color:#e8cf9b}
+.setupPreview{padding:30px 18px;background:#eee5d7;border-left:1px solid #e1d4be}.setupMain{padding:clamp(22px,4vw,55px)}.setupPreviewCard{border:1px solid #d3c5ae;background:#fffdf8;padding:16px;border-radius:16px}
+.editorGrid{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);gap:18px}.editorPanel{padding:18px;background:#fffdf8;border:1px solid var(--c-line);border-radius:16px}.editorPanel label{display:block;font-size:12px;font-weight:800;margin:12px 0 7px}.editorPanel :is(input,textarea,select){display:block;width:100%;min-height:44px;border:1px solid var(--c-line);border-radius:10px;background:#fffdf8;padding:11px;font:inherit}.editorPreview{min-width:0;overflow:hidden;border-radius:16px;border:1px solid var(--c-line);background:#eee5d7;padding:18px}
+@media(max-width:1200px){.four{grid-template-columns:repeat(2,minmax(0,1fr))}.storeCards{grid-template-columns:repeat(3,minmax(0,1fr))}.ticketBoard{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:920px){.shell{grid-template-columns:1fr}.sidebar{display:none}.mobileNav{display:block;background:var(--c-ink);color:var(--c-chalk);padding:12px 18px}.mobileNav summary{list-style:none;cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center}.mobileNav summary::-webkit-details-marker{display:none}.mobileNav nav{display:grid;gap:4px;padding:9px 0}.mobileNav a{padding:11px;border-radius:9px;display:block}.mobileNav a[aria-current="page"]{background:#372716}.two,.posGrid{grid-template-columns:1fr}.setup{grid-template-columns:1fr}.setupNav{padding:12px 18px}.setupNav .setupSteps{display:flex;overflow:auto;gap:7px}.setupStep{white-space:nowrap;padding:10px;min-width:max-content}.setupPreview{border-left:0}}
+@media(max-width:700px){.page{padding:18px 14px}.three,.four,.ticketBoard{grid-template-columns:1fr}.storeHero{grid-template-columns:1fr}.storeHeroPhoto{min-height:230px;grid-row:1}.storeHeroText{padding:26px 18px 34px}.storeCards,.store[data-kind="salon"] .storeCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.storeCard img,.storeCardArt{height:126px}.storeCardBody{padding:11px}.storeCardBody h3{font-size:14px}.storeAbout{grid-template-columns:1fr}.storeLinks{gap:9px}.storeLinks>a:not(:last-child){display:none}.topbar{padding:12px 15px}.posProducts{grid-template-columns:repeat(2,minmax(0,1fr))}.driver{border-radius:0}.editorGrid{grid-template-columns:1fr}}
+@media(max-width:365px){.storeCards,.store[data-kind="salon"] .storeCards{grid-template-columns:1fr}.metricValue{font-size:20px}.storeHeader{padding:13px}}
+@media(prefers-reduced-motion:reduce){.root *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Phone: drop the "When" column rather than making someone scroll sideways
+   to reach Status, which is the one they actually came for. */
+@media (max-width: 700px) {
+  .table th:nth-child(6), .table td:nth-child(6) { display: none; }
+}
+
+/* Spacing utilities replacing the pack's inline styles, so layout stays in
+   the stylesheet like the rest of this codebase. */
+.gridSpaced{margin-bottom:18px}
+.sectionSpaced{margin-top:18px}
+.panelHeadline{font-size:27px;margin:12px 0}
+.columnHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.staffEmpty{color:#c5af91}
+.setupStepDetail{display:block;font-size:11px}
+.bookingTime{min-width:74px}
+.formSlot{margin-top:22px}
+/* The storefront hero is always a dark photo panel, so its eyebrow uses the
+   bright brand amber rather than the light-surface variant. */
+.eyebrowOnDark{color:var(--c-amber)}
+.storeStoryHeading{font-size:clamp(28px,3vw,41px);margin:11px 0}
+.panelPadded{padding:25px}
+.rowActions{white-space:nowrap}
+.rowActions :is(form,button,a){display:inline-flex;margin-right:6px}
+/* Visually hidden but announced - the actions column needs a header for
+   screen readers without printing one for everyone else. */
+.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.rowSummary{display:block;font-family:var(--font-body),Archivo,system-ui,sans-serif;font-size:11px;color:var(--c-muted);margin-top:3px;max-width:34ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* The pack's `.root a{color:inherit}` is (0,1,1) and silently beat every
+   button colour below it at (0,1,0) — so `.buttonDark` rendered its label in
+   the inherited near-black on a near-black fill: a solid invisible slab.
+   `.buttonPrimary` only looked right by luck (it inherited ink, which happens
+   to be readable on amber). Re-stated at (0,2,0) so the button owns its own
+   text colour rather than winning or losing by accident. */
+.root .button{color:var(--c-ink)}
+.root .buttonPrimary{color:var(--c-ink)}
+.root .buttonDark{color:var(--c-chalk)}
+.root .storeAction{color:var(--m-action-text)}

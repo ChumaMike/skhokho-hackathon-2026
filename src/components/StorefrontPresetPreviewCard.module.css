@@ -1,0 +1,75 @@
+.card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border-radius: var(--store-radius-card);
+  border: 2px solid var(--store-page-border);
+  background: var(--store-page-bg);
+  cursor: pointer;
+}
+
+.cardSelected {
+  border-color: var(--store-primary-safe);
+}
+
+.mockHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mockLogo {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--store-radius-card);
+  background: var(--store-primary-safe);
+  color: var(--store-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+
+.mockName {
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  letter-spacing: var(--store-heading-letter-spacing);
+  font-size: var(--text-sm);
+  color: var(--store-page-fg);
+}
+
+.mockItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: var(--store-radius-card);
+  border-width: var(--store-card-border-width);
+  border-style: solid;
+  border-color: var(--store-page-border);
+  box-shadow: var(--store-card-shadow);
+  font-size: var(--text-xs);
+  color: var(--store-page-fg);
+}
+
+.mockButton {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--store-radius-button);
+  background: var(--store-primary-safe);
+  color: var(--store-on-primary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--store-page-muted);
+}

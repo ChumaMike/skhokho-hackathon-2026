@@ -1,0 +1,60 @@
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 4vw, 36px);
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  max-width: 720px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--shop-border);
+}
+
+.info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 700;
+  color: var(--shop-fg);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--shop-muted);
+}
+
+.price {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.more {
+  margin: 16px 0 0;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.more a {
+  color: var(--shop-primary-safe);
+}

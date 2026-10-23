@@ -1,0 +1,49 @@
+.summary {
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-card);
+  padding: 12px 14px;
+  margin: 4px 0 16px;
+  background: var(--board);
+}
+
+.summaryTitle {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--chalk);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.grantList,
+.denyList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 6px;
+  font-size: var(--text-sm);
+}
+
+.grantList li {
+  color: var(--chalk);
+}
+
+.grantList li::before {
+  content: "✓ ";
+  color: var(--veld);
+}
+
+.denyList li {
+  color: var(--dust);
+}
+
+.denyList li::before {
+  content: "✕ ";
+  color: var(--oxide);
+}
+
+.note {
+  font-size: var(--text-xs);
+  color: var(--dust);
+  margin: 8px 0 0;
+  font-style: italic;
+}

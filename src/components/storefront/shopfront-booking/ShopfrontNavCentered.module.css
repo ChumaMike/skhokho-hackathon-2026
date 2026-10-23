@@ -1,0 +1,155 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(23, 16, 9, 0.96);
+  color: var(--shop-cream);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+/* 3-column grid — brand left, links centered in the middle column, actions
+   right. This is the layout difference from ShopfrontNav (top-right
+   cluster): the middle column gets the remaining space so its content can
+   be centered within it, rather than the links being pushed to the edge. */
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: min(1240px, calc(100% - 40px));
+  height: 72px;
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr) minmax(10rem, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--shop-cream);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  justify-self: start;
+  /* A grid item's automatic minimum width is its whole nowrap text — without
+     these, a long business name widens the page instead of truncating. */
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.links {
+  display: none;
+  gap: 22px;
+  align-items: center;
+  justify-self: center;
+}
+
+.links a {
+  font-size: 13px;
+  color: #d9ceb9;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.links a:hover {
+  color: var(--shop-primary-safe);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: end;
+}
+
+.basketLink {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--shop-cream);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.bookButton {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--shop-on-primary);
+  background: var(--shop-primary-safe);
+  border-radius: 999px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--shop-primary-safe);
+  color: var(--shop-on-primary);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Phones: links are hidden, so brand + actions share one row — the brand
+   takes what's left and truncates, the actions keep their natural width. */
+@media (max-width: 719px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 720px) {
+  .links {
+    display: flex;
+  }
+}
+
+/* Phones: the page links fold behind a Menu button beside the main action. */
+.menuButton {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--shop-cream);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.menuButton:focus-visible {
+  outline: 2px solid var(--shop-primary-safe);
+  outline-offset: 2px;
+}
+
+.mobileLinks {
+  display: grid;
+  width: min(1240px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 6px 0 14px;
+}
+
+.mobileLinks a {
+  display: block;
+  padding: 12px 4px;
+  min-height: 44px;
+  font-size: 15px;
+  color: #d9ceb9;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 720px) {
+  .menuButton,
+  .mobileLinks {
+    display: none;
+  }
+}

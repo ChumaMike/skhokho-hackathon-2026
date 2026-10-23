@@ -1,0 +1,84 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.lede {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 16px;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 32px;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suggestionChip {
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--dust);
+  border-radius: 100px;
+  padding: 8px 14px;
+  font-size: var(--text-sm);
+  min-height: var(--touch-min);
+}
+
+.suggestionChip:hover {
+  color: var(--chalk);
+  border-color: var(--amber);
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  max-width: 90%;
+}
+
+.bubbleUser {
+  align-self: flex-end;
+  background: var(--amber);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.bubbleAssistant {
+  align-self: flex-start;
+  background: var(--board);
+  border: 1px solid var(--edge);
+  color: var(--chalk);
+}
+
+.previewTag {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--dust);
+  letter-spacing: 0.02em;
+}
+
+.form {
+  display: flex;
+  gap: 8px;
+}
+
+.form :global(.input) {
+  flex: 1;
+}

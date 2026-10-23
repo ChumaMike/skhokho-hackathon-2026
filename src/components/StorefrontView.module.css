@@ -1,0 +1,389 @@
+/*
+ * Everything under .themeScope reads --store-* custom properties injected
+ * inline on this wrapper by StorefrontView (resolveStorefrontTokens) — never
+ * :root, so these values can never leak into the surrounding dashboard when
+ * the storefront-design interview mounts a real StorefrontView for preview.
+ * No rule here ever branches on which preset is active; presets are only
+ * ever consumed as already-resolved token values (see storefront-theme.ts).
+ *
+ * Every colour below reads --store-page-bg/-fg/-muted/-border, never the
+ * dashboard's --ink/--chalk/--dust/--board/--edge/--amber — those flip
+ * under the viewer's OS `prefers-color-scheme`, which would make a
+ * merchant's storefront visibly change appearance per-visitor. .themeScope
+ * itself carries a fixed background so the page never shows the flipping
+ * `body{background:var(--ink)}` through as a mismatched backdrop. See
+ * storefront-colors.ts's STOREFRONT_PAGE_* for where these come from, and
+ * storefront-theme.test.ts's "system theme independence" tests.
+ */
+
+.themeScope {
+  background: var(--store-page-bg);
+  color: var(--store-page-fg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--edge);
+}
+
+.themeScope .header {
+  border-bottom-color: var(--store-primary);
+}
+
+.logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.themeScope .logo {
+  border-radius: var(--store-radius-card);
+}
+
+.logoFallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--ink);
+}
+
+/*
+ * Was hardcoded `color: var(--ink)` regardless of the business's actual
+ * primary colour — a business with a dark primaryColor already rendered
+ * an unreadable initial before this fix. Now uses the contrast-safe pair.
+ */
+.themeScope .logoFallback {
+  border-radius: var(--store-radius-card);
+  background: var(--store-primary-safe);
+  color: var(--store-on-primary);
+}
+
+/*
+ * Only rendered for MINIMAL hero mode (see StorefrontView.tsx) — this IS
+ * the page's hero heading in that mode, so it gets the same length-aware
+ * clamp as StorefrontHero's own name headings (StorefrontHero.module.css)
+ * for a long real business name.
+ */
+.name {
+  font-family: var(--font-display);
+  font-size: clamp(18px, calc(32px - 0.2px * var(--hero-name-len, 15)), var(--text-xl));
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  margin: 0 0 2px;
+}
+
+.themeScope .name {
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  letter-spacing: var(--store-heading-letter-spacing);
+}
+
+.meta {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.themeScope .meta {
+  color: var(--store-page-muted);
+}
+
+/* MINIMAL-hero equivalent of StorefrontHero's own .heroKicker — that
+   component renders nothing at all in MINIMAL mode (see its own comment),
+   so headline/subheadline need a home here instead, or a business on the
+   MINIMAL default (every FOOD_VENDOR/CALM preset business, unless changed)
+   would never see content it explicitly wrote. */
+.kicker {
+  margin: 0 0 2px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
+
+.themeScope .kicker {
+  color: var(--store-page-accent);
+}
+
+.subheadline {
+  margin: 4px 0 0;
+  font-size: var(--text-sm);
+  color: var(--dust);
+}
+
+.themeScope .subheadline {
+  color: var(--store-page-fg);
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+}
+
+.starRow {
+  color: var(--amber);
+  font-size: var(--text-sm);
+  letter-spacing: 1px;
+}
+
+.themeScope .starRow {
+  color: var(--store-page-accent);
+}
+
+.ratingValue {
+  font-weight: 600;
+  color: var(--chalk);
+  font-size: var(--text-sm);
+}
+
+.themeScope .ratingValue {
+  color: var(--store-page-fg);
+}
+
+.ratingCount {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.themeScope .ratingCount {
+  color: var(--store-page-muted);
+}
+
+.description {
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.themeScope .description {
+  color: var(--store-page-fg);
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--dust);
+}
+
+.themeScope .empty {
+  color: var(--store-page-muted);
+}
+
+.emptyHint {
+  font-size: var(--text-sm);
+  margin-top: 8px;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 12px;
+}
+
+.themeScope .sectionTitle {
+  font-family: var(--store-heading-font);
+  font-weight: var(--store-heading-weight);
+  letter-spacing: var(--store-heading-letter-spacing);
+  color: var(--store-page-fg);
+}
+
+.topCtaRow {
+  margin: 0 0 20px;
+}
+
+.contactList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.themeScope .contactList {
+  color: var(--store-page-fg);
+}
+
+/* .reviewCard and the product/service cards (ProductsSection/
+   ServicesSection, each with their own CSS module now) all compose the
+   global `card` class (background/border only) — overridden here so those
+   surfaces stay on the fixed storefront neutrals, not the dashboard's
+   flipping --board/--edge. Was previously scoped to a since-removed
+   `.item` class shared by products and services; kept here as the one
+   rule every catalogue-style card in the storefront still relies on. */
+.themeScope :global(.card) {
+  background: var(--store-page-bg);
+  border-color: var(--store-page-border);
+}
+
+.orderForm {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* The shared global `.input` class (background/border/text) — same
+   fixed-neutral override as `.card` above, for the same reason. */
+.themeScope :global(.input) {
+  background: var(--store-page-bg);
+  border-color: var(--store-page-border);
+  color: var(--store-page-fg);
+}
+
+.phoneInput {
+  flex: 1 1 140px;
+}
+
+.qtyInput {
+  flex: 0 0 64px;
+}
+
+.dateInput {
+  flex: 1 1 180px;
+}
+
+.fulfilmentRow {
+  flex: 1 1 100%;
+  margin-bottom: 4px;
+}
+
+.fulfilmentRadio {
+  margin-right: 4px;
+}
+
+.fulfilmentLabel {
+  margin-right: 16px;
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.themeScope .fulfilmentLabel {
+  color: var(--store-page-fg);
+}
+
+.deliveryFields {
+  display: none;
+  margin-top: 8px;
+}
+
+/* Pure-CSS visibility toggle — no client component. The DELIVERY radio and
+   this block are siblings within .fulfilmentRow, in that DOM order. */
+.fulfilmentRow:has(input[value="DELIVERY"]:checked) .deliveryFields {
+  display: block;
+}
+
+.deliveryAddressInput {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  resize: vertical;
+}
+
+.deliveryAreaInfo {
+  font-size: var(--text-xs);
+  color: var(--dust);
+  margin: 4px 0 0;
+}
+
+.themeScope .deliveryAreaInfo {
+  color: var(--store-page-muted);
+}
+
+/*
+ * Semantic CTA-hierarchy classes, not "product" vs "service" classes —
+ * WHICH button gets storeActionPrimary vs storeActionSecondary is decided
+ * per-render by resolveActionEmphasis (storefront-theme.ts), driven by the
+ * merchant's resolved primaryCustomerAction, never hardcoded to a domain.
+ * Both keep .btn's sizing/touch-target/focus styles from globals.css;
+ * these two-class selectors have higher specificity than .btnPrimary
+ * alone, so the colour/radius overrides apply without !important.
+ * Operational/state colours (errors, warnings, success) never read these
+ * tokens — see globals.css's .errorBanner/.successBanner, untouched here.
+ */
+.themeScope .storeActionPrimary {
+  background: var(--store-action-primary);
+  color: var(--store-action-primary-foreground);
+  border-radius: var(--store-radius-button);
+}
+
+.themeScope .storeActionSecondary {
+  background: var(--store-action-secondary);
+  color: var(--store-action-secondary-foreground);
+  border-radius: var(--store-radius-button);
+}
+
+/* .btnSecondary (e.g. Back buttons elsewhere) isn't used within the public
+   storefront today, but keep it fixed-neutral defensively if it ever is. */
+.themeScope :global(.btnSecondary) {
+  background: var(--store-page-bg);
+  border-color: var(--store-page-border);
+  color: var(--store-page-fg);
+}
+
+.reviewsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reviewCard {
+  padding: 14px 16px;
+}
+
+.themeScope .reviewCard {
+  border-radius: var(--store-radius-card);
+  border-width: var(--store-card-border-width);
+  box-shadow: var(--store-card-shadow);
+}
+
+.reviewTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.reviewAuthor {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.themeScope .reviewAuthor {
+  color: var(--store-page-muted);
+}
+
+.reviewComment {
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.themeScope .reviewComment {
+  color: var(--store-page-fg);
+}

@@ -1,0 +1,138 @@
+.wrap {
+  max-width: 340px;
+}
+
+.card {
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.card.ready {
+  background: var(--veld);
+  border-color: var(--veld);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.ready .name {
+  color: var(--ink);
+}
+
+.headerMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.progress {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+.ready .progress {
+  color: rgba(14, 10, 5, 0.7);
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  color: var(--dust);
+}
+
+.ready .code {
+  color: rgba(14, 10, 5, 0.7);
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.slot {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: 50%;
+  border: 1.5px dashed var(--edge);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.slot:hover {
+  border-color: var(--amber);
+}
+
+.slot:active {
+  transform: scale(0.94);
+}
+
+.slot:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.disc {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: 50%;
+  background: var(--amber);
+  display: inline-block;
+  transform: translate(var(--ox, 0px), var(--oy, 0px)) rotate(var(--rotate, 0deg));
+}
+
+.ready .disc {
+  background: var(--ink);
+}
+
+.readyBanner {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.rewardBtn {
+  width: 100%;
+  min-height: var(--touch-min);
+  border-radius: 10px;
+  border: none;
+  background: var(--ink);
+  color: var(--amber);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin: 0;
+}
+
+.caption {
+  margin: 12px 0 0;
+  font-size: var(--text-xs);
+  color: var(--dust);
+}

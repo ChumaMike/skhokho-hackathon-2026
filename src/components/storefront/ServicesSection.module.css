@@ -1,0 +1,78 @@
+.serviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Left accent bar (vs. the product grid's full-bleed photo) is this
+   section's own visual signature — a service is booked, not added, so the
+   card reads as "reserve a slot" rather than "browse a picture." */
+.serviceCard {
+  padding: var(--store-space-unit, 16px);
+  border-left: 3px solid var(--store-page-accent);
+}
+
+.serviceMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.serviceImage {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.serviceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.serviceName {
+  font-weight: 600;
+  color: var(--store-page-fg);
+}
+
+.serviceDesc {
+  color: var(--store-page-muted);
+  font-size: var(--text-sm);
+}
+
+.serviceMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.servicePrice {
+  font-family: var(--font-mono);
+  color: var(--store-page-fg);
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.durationBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--store-page-accent) 14%, transparent);
+  color: var(--store-page-accent);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.bookButton {
+  width: 100%;
+}

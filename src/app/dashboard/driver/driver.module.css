@@ -1,0 +1,185 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.routeSummary {
+  padding: 18px;
+  margin-bottom: 16px;
+  border-color: var(--amber);
+}
+
+.routeSummaryEyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 0 0 4px;
+}
+
+.routeSummaryTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  padding: 18px;
+}
+
+.itemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.orderNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.status {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.customer {
+  font-weight: 600;
+  color: var(--chalk);
+  margin: 0 0 4px;
+}
+
+.items {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin: 0 0 10px;
+}
+
+.address {
+  font-size: var(--text-base);
+  color: var(--chalk);
+  margin: 0 0 4px;
+}
+
+.instructions {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin: 0 0 12px;
+}
+
+.linkRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.linkBtn {
+  flex: 1 1 100px;
+  text-align: center;
+  min-height: var(--touch-min);
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  color: var(--chalk);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionRow {
+  margin-bottom: 10px;
+}
+
+.primaryBtn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid var(--amber);
+  background: var(--amber);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reportForm {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reportForm select {
+  flex: 1 1 160px;
+}
+
+.problemBtn {
+  border: 1px solid var(--oxide);
+  color: var(--oxide);
+  background: transparent;
+  border-radius: 10px;
+  padding: 0 14px;
+  min-height: var(--touch-min);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--dust);
+}
+
+.historySection {
+  margin-top: 24px;
+}
+
+.historyTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 10px;
+}
+
+.historyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--edge);
+}
+
+.historyDelivered {
+  color: var(--veld);
+}
+
+.historyFailed {
+  color: var(--oxide);
+}

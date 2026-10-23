@@ -1,0 +1,100 @@
+/*
+ * Sticky, blurred header. Was static with zero visual weight (no border, no
+ * background, plain text links) — the one element present at every scroll
+ * position on every public page, so its blankness set the tone for the
+ * whole page reading as "unstyled." backdrop-filter is cheap (GPU
+ * compositor, no layout cost) so it's safe on the mid-range-Android
+ * audience DESIGN.md targets, unlike the JS-driven Tilt effects which are
+ * gated to desktop pointer devices.
+ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  margin: 0 0 8px;
+  padding: 14px 0;
+  background: rgba(14, 10, 5, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--edge);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  text-decoration: none;
+}
+
+/* Small stamp-disc logomark — same filled-circle-in-dashed-ring vocabulary
+ * as DemoStampCard, not a generic icon. */
+.mark {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.mark::before,
+.mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+
+.mark::before {
+  inset: 3px;
+  background: var(--amber);
+}
+
+.mark::after {
+  inset: 0;
+  border: 1.5px dashed var(--edge);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.link {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--chalk);
+}
+
+.registerBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--amber);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.registerBtn:hover {
+  background: #f0b03a;
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .registerBtn {
+    transition: none;
+  }
+}

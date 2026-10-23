@@ -1,0 +1,3227 @@
+// =============================================================================
+// SKHOKHO PLATFORM — Unified Prisma Schema (Neon)
+// -----------------------------------------------------------------------------
+// Reconciled from the Kasi multi-tenant drop per the migration blueprint:
+//   • Kasi `Tenant`  → merged into ONE canonical `Business` (UUID PK) so the
+//     approved identity core (memberships/visits/consents → businesses(id)) and
+//     the operational models (orders/inventory/appointments) share one business.
+//   • Kasi `StaffMember` → `BusinessStaff` (@@map business_staff) — a business's
+//     own cashier; kept distinct from the agency's internal staff intranet.
+//   • Kasi `TenantCustomer`/`PlatformUser`/`ConsentHistory`/`Ad*` → DISCARDED.
+//     The POPIA-approved identity core (Customer/Membership/Visit/Consent) is the
+//     system of record: hidden global ID, pairwise short codes, append-only,
+//     OTP-verified linking, cross-business layer stays dark until s57 (added later
+//     behind a feature flag). Order/Appointment repoint customer FK → Membership.
+//   • Auth: new `AppUser` credential store (owner/agent/staff/admin) — replaces
+//     Supabase Auth (Neon has none). Customers authenticate by WhatsApp OTP, not
+//     here.
+//
+// STILL TO ADD (studio layer): agents, agent intranet staff, client_journeys,
+// agent_projects, build pipeline, finance, support — folded in during M2 (they
+// reference businesses(id)). This file is the validated platform core.
+//
+// Identity tables (customers/…/audit_log) carry triggers + RLS + SECURITY DEFINER
+// RPCs that Prisma can't express — see prisma/sql/identity_layer.sql. The models
+// below are declared for typed reads; writes go through the RPCs.
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL") // Neon pooled (pgbouncer) — runtime
+  directUrl  = env("POSTGRES_URL_NON_POOLING") // Neon direct — migrations/DDL
+  extensions = [uuidOssp(map: "uuid-ossp"), pgcrypto]
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum BusinessCategory {
+  SALON
+  FOOD_VENDOR
+  CAR_WASH
+  RETAIL_STORE
+  TUCK_SHOP
+  MECHANIC
+  HAIR_BRAIDER
+  NAIL_TECHNICIAN
+  EVENTS
+  CHILDCARE
+  LAUNDRY
+  OTHER
+}
+
+enum BusinessStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum AppRole {
+  OWNER // business owner
+  AGENT // field/sales agent
+  STAFF // Skhokho internal staff (agency intranet)
+  ADMIN // platform admin
+  DRIVER // Skhokholetha delivery driver (a driver profile is what grants driving)
+}
+
+enum StaffRole {
+  OWNER
+  MANAGER
+  STAFF
+  CASHIER
+  TECHNICIAN
+}
+
+// Presentation-only routing target — which screen a staff member lands on.
+// NEVER an authorization mechanism (BusinessRole.permissions remains the
+// only one) — see BusinessStaff.primaryWorkspace's own comment. Deliberately
+// NOT merged with StaffRole: StaffRole is frozen (no DRIVER/KITCHEN/etc
+// added to it), while workspace values are expected to grow as more
+// role-specific screens ship.
+enum StaffWorkspace {
+  OWNER
+  MANAGER
+  COUNTER
+  KITCHEN
+  DELIVERY
+  SERVICE_PROVIDER
+  STOCK
+  GENERAL
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  READY
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum OrderFulfilmentMethod {
+  COLLECTION
+  DELIVERY
+}
+
+// Deliberately no ACCEPTED/EN_ROUTE — MVP scope, see the delivery milestone
+// plan. Never authorizes anything by itself; BusinessRole.permissions
+// (canPerformDeliveries/canManageDeliveries) is the only mechanism.
+enum DeliveryStatus {
+  UNASSIGNED
+  ASSIGNED
+  PICKED_UP
+  DELIVERED
+  FAILED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  EFT
+  SNAPSCAN
+  OZOW
+  ZAPPER
+  CAPITEC_PAY
+  LOYALTY_POINTS
+  CREDIT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  REFUNDED
+  FAILED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum StockMovementType {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+  RETURN
+  WASTE
+  TRANSFER
+}
+
+// =============================================================================
+// AUTH — credential store (replaces Supabase auth.users)
+// =============================================================================
+
+/// One login identity. Preserves the former Supabase auth.users UUIDs so any
+/// *.auth_user_id FK stays valid. Business owners, field agents, internal staff
+/// and platform admins log in here; customers use WhatsApp OTP (not this table).
+model AppUser {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String    @unique
+  passwordHash     String?   @map("password_hash") // null = passwordless → must set on first login
+  role             AppRole
+  department       String? // for STAFF: sales|ops|finance|marketing|hr|admin
+  emailVerifiedAt  DateTime? @map("email_verified_at")
+  mustSetPassword  Boolean   @default(false) @map("must_set_password")
+  resetToken       String?   @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+  isActive         Boolean   @default(true) @map("is_active")
+  lastLoginAt      DateTime? @map("last_login_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  ownedBusinesses Business[]
+  driverProfile   DriverProfile?
+  platformAdmin   PlatformAdmin?
+
+  @@index([role])
+  @@map("app_users")
+}
+
+// =============================================================================
+// BUSINESS — one canonical business (studio `businesses` + Kasi `Tenant`)
+// =============================================================================
+
+model Business {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  // --- Ownership / studio ---
+  ownerUserId  String?  @map("auth_user_id") @db.Uuid
+  owner        AppUser? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  active       Boolean  @default(false) // studio: preview(false) → live(true)
+  previewToken String?  @map("preview_token")
+  config       Json? // studio config incl. { loyalty_stamps_required }
+
+  // --- Identity ---
+  name        String
+  slug        String           @unique // mybiz.skhokho.co.za
+  description String?
+  category    BusinessCategory @default(OTHER)
+  status      BusinessStatus   @default(PENDING_VERIFICATION)
+
+  // --- Contact / location ---
+  email      String?
+  phone      String?
+  whatsapp   String?
+  address    String?
+  suburb     String?
+  city       String?
+  province   String?
+  postalCode String? @map("postal_code")
+  country    String  @default("ZA")
+  latitude   Float?
+  longitude  Float?
+
+  // --- Branding / config ---
+  logoUrl        String? @map("logo_url")
+  bannerUrl      String? @map("banner_url")
+  primaryColor   String? @default("#E8A020") @map("primary_color")
+  accentColor    String? @default("#F59E0B") @map("accent_color")
+  settings       Json?
+  customDomain   String? @unique @map("custom_domain")
+  timezone       String  @default("Africa/Johannesburg")
+  currency       String  @default("ZAR")
+  operatingHours Json?   @map("operating_hours")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // --- Relations ---
+  subscription           BusinessSubscription?
+  entitlementOverrides   EntitlementOverride[]
+  platformInvoices       PlatformInvoice[]
+  platformSettlements    PlatformSettlement[]
+  addons                 BusinessAddon[]
+  messageLogs            MessageLog[]
+  staff                  BusinessStaff[]
+  roles                  BusinessRole[]
+  products               Product[]
+  productCategories      ProductCategory[]
+  menuOptionGroups       MenuOptionGroup[]
+  menuOptions            MenuOption[]
+  productOptionGroups    ProductOptionGroup[]
+  services               Service[]
+  inventoryItems         InventoryItem[]
+  orders                 Order[]
+  deliveries             OrderDelivery[]
+  appointments           Appointment[]
+  metrics                BusinessMetric[]
+  notifications          BusinessNotification[]
+  assistantConversations AssistantConversation[]
+  buddyActions           BuddyAction[]
+  contentDrafts          ContentDraft[]
+  contentCampaigns       ContentCampaign[]
+  aiUsageEvents          AiUsageEvent[]
+  networkDeliveries      NetworkDelivery[]
+  deliveryZones          DeliveryZone[]
+
+  // Identity core (raw-SQL managed; declared for typed reads)
+  memberships Membership[]
+  visits      Visit[]
+  consents    Consent[]
+  reviews     Review[]
+
+  domains             BusinessDomain[]
+  slugHistory         BusinessSlugHistory[]
+  domainRegistrations DomainRegistration[]
+  profile             BusinessProfile?
+
+  paymentConnections  BusinessPaymentConnection[]
+  paymentAttempts     BusinessPaymentAttempt[]
+  paymentEvents       BusinessPaymentEvent[]
+  storefrontRevisions StorefrontRevision[]
+  storefrontLeads     StorefrontLead[]
+  storefrontStats     StorefrontDailyStat[]
+
+  // Tab 5 — contact email change in flight (business-email.ts)
+  emailChange BusinessEmailChange?
+  // Tab 5 — data-subject requests (export / erasure) handled for this business or its customers
+  dataSubjectRequests DataSubjectRequest[]
+
+  @@index([slug])
+  @@index([category])
+  @@index([status])
+  @@index([city])
+  @@index([ownerUserId])
+  @@map("businesses")
+}
+
+// =============================================================================
+// DOMAINS — per-surface hostname mapping (storefront/bookings/admin), both
+// Skhokho-provided and merchant-owned. Platform aliases (<slug>.<platform>,
+// <slug>.bookings.<platform>, <slug>.admin.<platform>) are NOT rows here —
+// they're synthesized at resolution time from Business.slug + PLATFORM_DOMAIN
+// (src/lib/tenant/context.ts), one source of truth, no risk of three rows
+// going stale on a slug rename. This table exists for CUSTOM (merchant-owned)
+// hostnames only, until a real need for an explicit PLATFORM-type override
+// row shows up. See docs/specs/2026-09-02-multi-tenant-domain-architecture.md
+// for the full design this implements.
+// =============================================================================
+
+enum DomainSurface {
+  STOREFRONT
+  BOOKINGS
+  ADMIN
+}
+
+enum DomainType {
+  PLATFORM
+  CUSTOM
+}
+
+enum DomainStatus {
+  PENDING
+  VERIFYING
+  ACTIVE
+  FAILED
+  REVOKED
+}
+
+/// How control of a domain was proven before it was allowed to route.
+enum DomainVerificationMethod {
+  /// The merchant published our TXT challenge in the domain's own DNS.
+  DNS_TXT
+  /// Registered for this business through our registrar integration.
+  REGISTRAR
+}
+
+enum DomainOwnershipStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+enum DomainDnsStatus {
+  UNKNOWN
+  /// Records don't (yet) point at the platform.
+  MISCONFIGURED
+  CONFIGURED
+}
+
+enum DomainSslStatus {
+  PENDING
+  ISSUED
+  FAILED
+}
+
+model BusinessDomain {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  // Globally unique — a hostname must never resolve to more than one
+  // business. Normalized (lowercase, no port) before being stored; see
+  // normalizeHostname in src/lib/tenant/context.ts, the same normalization
+  // hostname resolution itself applies on read.
+  hostname   String        @unique
+  /// The registrable domain (kotatainment.co.za for www.kotatainment.co.za) — where the ownership TXT record lives.
+  apexDomain String?       @map("apex_domain")
+  surface    DomainSurface
+  domainType DomainType    @default(CUSTOM) @map("domain_type")
+  /// The canonical address for its surface — other ACTIVE domains 308 here.
+  isPrimary  Boolean       @default(false) @map("is_primary")
+  /// Routing state. Only ACTIVE routes traffic (src/lib/tenant/context.ts).
+  status     DomainStatus  @default(PENDING)
+
+  // Shown to the merchant as a DNS TXT record value — not a secret (its
+  // entire purpose is to be published in public DNS), so stored plain,
+  // unlike staff/owner reset tokens (see auth.service.ts's hashToken).
+  verificationToken  String?                   @map("verification_token")
+  verificationMethod DomainVerificationMethod? @map("verification_method")
+  ownershipStatus    DomainOwnershipStatus     @default(PENDING) @map("ownership_status")
+  dnsStatus          DomainDnsStatus           @default(UNKNOWN) @map("dns_status")
+  sslStatus          DomainSslStatus           @default(PENDING) @map("ssl_status")
+
+  provider         String? @default("vercel")
+  providerId       String? @map("provider_id") // e.g. a Vercel domain id, for the hosting provider adapter
+  /// True only when OUR attach call added this hostname to the hosting
+  /// project. Removing the domain detaches it only then — never a hostname
+  /// that was already on the project (e.g. a platform host).
+  providerAttached Boolean @default(false) @map("provider_attached")
+
+  /// Set when this domain was bought through Skhokho.
+  registrationId String?             @map("registration_id")
+  registration   DomainRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  /// Consecutive failed re-checks of an ACTIVE domain — routing stops at the threshold.
+  failedChecks  Int       @default(0) @map("failed_checks")
+  lastCheckedAt DateTime? @map("last_checked_at")
+  lastError     String?   @map("last_error")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+  verifiedAt  DateTime? @map("verified_at")
+  activatedAt DateTime? @map("activated_at")
+  revokedAt   DateTime? @map("revoked_at")
+
+  @@index([businessId])
+  @@index([businessId, surface])
+  @@index([apexDomain])
+  @@index([status, lastCheckedAt])
+  @@map("business_domains")
+}
+
+enum DomainRegistrationStatus {
+  /// Price agreed; waiting for the merchant's payment.
+  AWAITING_PAYMENT
+  /// Paid; the registrar is registering it.
+  REGISTERING
+  REGISTERED
+  /// Expiring soon with auto-renew off.
+  RENEWAL_DUE
+  EXPIRED
+  /// The merchant moved it to another registrar — it's theirs; we keep the history.
+  TRANSFERRED_OUT
+  FAILED
+  CANCELLED
+}
+
+/// A domain bought through Skhokho's registrar integration. The MERCHANT is
+/// the registrant (legal holder) — Skhokho manages it through the registrar
+/// arrangement on their behalf and can always hand it over (transfer code).
+/// Personal information (registrant contact) is the merchant's own.
+model DomainRegistration {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
+
+  /// The registrable domain, normalized (kotatainment.co.za).
+  domain            String
+  /// Which registrar integration holds it (src/modules/domains/registrar).
+  registrarKey      String  @map("registrar_key")
+  registrarDomainId String? @map("registrar_domain_id")
+
+  status          DomainRegistrationStatus @default(AWAITING_PAYMENT)
+  registrantName  String                   @map("registrant_name")
+  registrantEmail String                   @map("registrant_email")
+
+  years             Int     @default(1)
+  /// What the merchant pays, in cents — snapshotted at purchase.
+  priceCents        Int     @map("price_cents")
+  renewalPriceCents Int?    @map("renewal_price_cents")
+  currency          String  @default("ZAR")
+  /// The platform-billing payment that paid for it (separate from merchant customer payments).
+  paymentReference  String? @map("payment_reference")
+
+  autoRenew    Boolean   @default(true) @map("auto_renew")
+  expiresAt    DateTime? @map("expires_at")
+  registeredAt DateTime? @map("registered_at")
+  lastSyncedAt DateTime? @map("last_synced_at")
+  lastError    String?   @map("last_error")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  domains BusinessDomain[]
+
+  @@index([businessId])
+  @@index([domain])
+  @@index([status, expiresAt])
+  @@map("domain_registrations")
+}
+
+// =============================================================================
+// SLUG HISTORY — every slug a business has given up. Business.slug is a
+// lookup key, not an identity (Business.id is), so a slug can change; the
+// old one is kept here so existing links 308 to the new address, and so
+// nobody else can claim it and impersonate the business. Retired slugs are
+// held permanently — reusable only by the business that retired them. See
+// src/modules/tenant/slug.service.ts.
+// =============================================================================
+
+model BusinessSlugHistory {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// Globally unique across history; slug.service.ts also checks it against
+  /// businesses.slug under one advisory lock, since no index spans both tables.
+  slug      String   @unique
+  retiredAt DateTime @default(now()) @map("retired_at")
+
+  @@index([businessId])
+  @@map("business_slug_history")
+}
+
+// =============================================================================
+// SUBSCRIPTION / ROLES / STAFF (a business's own team)
+// =============================================================================
+
+/// A business's SaaS subscription to Skhokho Labs — what the BUSINESS may
+/// use. Never authorization (BusinessRole.permissions decides what a PERSON
+/// may do) and never a merchant's customer payment (those are
+/// BusinessPaymentAttempt). Effective access is resolved in
+/// src/modules/billing/entitlements.ts from status + period dates; a missing
+/// row, or planId null, means the default plan.
+model BusinessSubscription {
+  id         String   @id @default(cuid())
+  businessId String   @unique @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  planId  String? @map("plan_id")
+  planRef Plan?   @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  status           SubscriptionStatus @default(ACTIVE)
+  /// Paid access runs until here. Null = open-ended (e.g. the free plan).
+  currentPeriodEnd DateTime?          @map("current_period_end")
+  /// PAST_DUE keeps the plan until here; null = currentPeriodEnd + the default grace days.
+  graceEndsAt      DateTime?          @map("grace_ends_at")
+  cancelledAt      DateTime?          @map("cancelled_at")
+
+  // --- Deprecated (pre-entitlements). Nothing reads these any more; kept
+  // until a later release drops them so this migration stays additive. ---
+  plan      SubscriptionPlan @default(FREE)
+  startDate DateTime         @default(now()) @map("start_date")
+  endDate   DateTime?        @map("end_date")
+  isActive  Boolean          @default(true) @map("is_active")
+
+  maxStaff    Int @default(2) @map("max_staff")
+  maxProducts Int @default(50) @map("max_products")
+  maxServices Int @default(10) @map("max_services")
+
+  hasAnalytics    Boolean @default(false) @map("has_analytics")
+  hasCustomDomain Boolean @default(false) @map("has_custom_domain")
+  hasAppointments Boolean @default(true) @map("has_appointments")
+  hasInventory    Boolean @default(true) @map("has_inventory")
+  hasLoyalty      Boolean @default(false) @map("has_loyalty")
+  hasApiAccess    Boolean @default(false) @map("has_api_access")
+
+  billingEmail String?  @map("billing_email")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([planId])
+  @@map("business_subscriptions")
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  /// Payment failed — the plan holds until the grace period ends.
+  PAST_DUE
+  /// Owner cancelled — the plan holds until currentPeriodEnd, then the default plan.
+  CANCELLED
+  /// Ended — the default plan applies. Data is never deleted.
+  EXPIRED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+/// A SaaS plan — DATA, not code. Application code only ever asks about
+/// feature keys (src/modules/billing/features.ts), never plan codes, so
+/// packaging and prices change by editing rows, not the app.
+model Plan {
+  id         String           @id @default(cuid())
+  /// Stable machine code ("FREE", "GROW", "PRO"). Shown nowhere as logic.
+  code       String           @unique
+  name       String
+  tagline    String?
+  /// Integer cents, ZAR. Null = not priced yet (a commercial decision).
+  priceCents Int?             @map("price_cents")
+  currency   String           @default("ZAR")
+  interval   BillingInterval? @map("billing_interval")
+  /// The plan every business without a (live) subscription falls back to.
+  /// Exactly one — enforced by a partial unique index in the migration.
+  isDefault  Boolean          @default(false) @map("is_default")
+  /// Listed on the public showcase.
+  isPublic   Boolean          @default(true) @map("is_public")
+  /// Retired plans stay valid for existing subscribers (grandfathering).
+  isActive   Boolean          @default(true) @map("is_active")
+  sortOrder  Int              @default(0) @map("sort_order")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  entitlements  PlanEntitlement[]
+  subscriptions BusinessSubscription[]
+
+  @@map("plans")
+}
+
+/// One feature a plan grants. `limitValue` only for limit-type features;
+/// null there means unlimited.
+model PlanEntitlement {
+  id         String  @id @default(cuid())
+  planId     String  @map("plan_id")
+  plan       Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureKey String  @map("feature_key")
+  enabled    Boolean @default(true)
+  limitValue Int?    @map("limit_value")
+
+  @@unique([planId, featureKey])
+  @@map("plan_entitlements")
+}
+
+/// A per-business exception to its plan (a pilot, a comp, a support fix).
+/// Always carries a reason; optionally expires.
+model EntitlementOverride {
+  id         String    @id @default(cuid())
+  businessId String    @map("business_id") @db.Uuid
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  featureKey String    @map("feature_key")
+  enabled    Boolean
+  limitValue Int?      @map("limit_value")
+  reason     String
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@unique([businessId, featureKey])
+  @@map("entitlement_overrides")
+}
+
+model BusinessRole {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name        String
+  permissions Json
+  isDefault   Boolean    @default(false) @map("is_default")
+  // Stable identifier for the invite flow's "Invite as <role>" picker to
+  // resolve against — `name` is a free-text display label with no
+  // uniqueness/stability guarantee elsewhere in the app (nothing lets a
+  // business rename a role today, but nothing prevents it either), so it's
+  // never matched against by application logic. `presetRole` is: one row
+  // per StaffRole value per business, created once at business-creation
+  // time (or by the one-off backfill script for pre-existing businesses),
+  // never renamed. Null for any future custom/non-preset role.
+  presetRole  StaffRole? @map("preset_role")
+  // Newer, primary preset identifier — domain is the app-level StaffPresetId
+  // union (src/modules/staff/staff-presets.ts), not a Postgres enum, so a
+  // future job-based preset never needs a schema migration for the type
+  // itself, only a new seeded row. presetRole stays frozen to StaffRole for
+  // the four legacy-shaped presets (kept for the existing P0 backfill
+  // script/tests); jobPreset is set on ALL presets going forward, including
+  // ones (Kitchen/Driver/Stock) that have no StaffRole equivalent at all.
+  jobPreset   String?    @map("job_preset")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  staffMembers BusinessStaff[]
+
+  @@unique([businessId, name])
+  @@unique([businessId, presetRole])
+  @@unique([businessId, jobPreset])
+  @@index([businessId])
+  @@map("business_roles")
+}
+
+model BusinessStaff {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  roleId String?       @map("role_id")
+  role   BusinessRole? @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  email            String
+  passwordHash     String    @map("password_hash")
+  resetToken       String?   @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+
+  firstName String    @map("first_name")
+  lastName  String    @map("last_name")
+  phone     String?
+  avatarUrl String?   @map("avatar_url")
+  staffRole StaffRole @default(STAFF) @map("staff_role")
+  isOwner   Boolean   @default(false) @map("is_owner")
+
+  // Free text ("Senior Barber"), always editable, defaults to the chosen
+  // preset's suggested title at invite time. Purely descriptive — never
+  // read for authorization.
+  jobTitle         String?         @map("job_title")
+  // Presentation-only routing target (which dashboard screen this person
+  // lands on) — NEVER an authorization check. Null means GENERAL (today's
+  // existing dashboard experience) for every staff member invited before
+  // this field existed; treat null as GENERAL everywhere this is read,
+  // never as "no access".
+  primaryWorkspace StaffWorkspace? @map("primary_workspace")
+
+  isActive    Boolean   @default(true) @map("is_active")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  sessions       BusinessStaffSession[]
+  orders         Order[]
+  appointments   Appointment[]
+  stockMovements StockMovement[]
+  deliveries     OrderDelivery[]
+
+  @@unique([businessId, email])
+  @@index([businessId])
+  @@map("business_staff")
+}
+
+model BusinessStaffSession {
+  id         String        @id @default(cuid())
+  staffId    String        @map("staff_id")
+  staff      BusinessStaff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  token      String        @unique
+  deviceInfo Json?         @map("device_info")
+  expiresAt  DateTime      @map("expires_at")
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  @@index([staffId])
+  @@map("business_staff_sessions")
+}
+
+// =============================================================================
+// IDENTITY CORE (POPIA-approved) — DDL/triggers/RLS live in
+// prisma/sql/identity_layer.sql. Global Skhokho ID hidden from businesses;
+// each business sees only the pairwise `publicId` + `shortCode`.
+// =============================================================================
+
+model Customer {
+  id          String     @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  displayName String?    @map("display_name")
+  language    String?
+  mergedInto  String?    @map("merged_into") @db.Uuid
+  survivor    Customer?  @relation("CustomerMerge", fields: [mergedInto], references: [id])
+  mergedFrom  Customer[] @relation("CustomerMerge")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  identifiers CustomerIdentifier[]
+  memberships Membership[]
+  consents    Consent[]
+
+  @@map("customers")
+}
+
+model CustomerIdentifier {
+  id         String    @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  customerId String    @map("customer_id") @db.Uuid
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type       String // phone | email | wa_id
+  value      String
+  verifiedAt DateTime? @map("verified_at")
+  source     String
+  isPrimary  Boolean   @default(false) @map("is_primary")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([type, value])
+  @@index([customerId])
+  @@map("customer_identifiers")
+}
+
+model Membership {
+  id          String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  customerId  String   @map("customer_id") @db.Uuid
+  customer    Customer @relation(fields: [customerId], references: [id])
+  businessId  String   @map("business_id") @db.Uuid
+  business    Business @relation(fields: [businessId], references: [id])
+  publicId    String   @unique @default(dbgenerated("gen_random_uuid()")) @map("public_id") @db.Uuid
+  shortCode   String   @map("short_code")
+  displayName String?  @map("display_name")
+  firstSeen   DateTime @default(now()) @map("first_seen")
+  lastSeen    DateTime @default(now()) @map("last_seen")
+  status      String   @default("active") // active | revoked
+
+  visits       Visit[]
+  orders       Order[]
+  appointments Appointment[]
+  reviews      Review[]
+  pushSubscriptions CustomerPushSubscription[] // Tab 7 (web push): browsers opted in to order updates
+
+  @@unique([customerId, businessId])
+  @@unique([businessId, shortCode])
+  @@index([businessId])
+  @@map("memberships")
+}
+
+model Visit {
+  id             String     @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  membershipId   String     @map("membership_id") @db.Uuid
+  membership     Membership @relation(fields: [membershipId], references: [id])
+  businessId     String     @map("business_id") @db.Uuid
+  business       Business   @relation(fields: [businessId], references: [id])
+  kind           String // visit | stamp | redeem
+  // Caller-supplied, optional. A matching (businessId, idempotencyKey) on a
+  // retried log_visit/redeem_reward call returns the existing row's result
+  // instead of inserting a second one — protection against a genuine
+  // retried request, not a substitute for the redeem_reward advisory lock
+  // (see prisma/sql/10_identity_rpcs.sql), which is what actually closes
+  // the two-concurrent-actors race. NULL is fine and stays non-unique
+  // (Postgres treats every NULL as distinct in a unique index) for the
+  // many visits that don't supply one.
+  idempotencyKey String?    @map("idempotency_key")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  @@unique([businessId, idempotencyKey])
+  @@index([membershipId, kind])
+  @@index([businessId, createdAt])
+  @@map("visits")
+}
+
+model Consent {
+  id         String    @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  customerId String    @map("customer_id") @db.Uuid
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  businessId String?   @map("business_id") @db.Uuid // null = platform scope
+  business   Business? @relation(fields: [businessId], references: [id])
+  purpose    String // loyalty_program | marketing | cross_business_link
+  channel    String? // whatsapp | sms | email
+  grantedAt  DateTime  @default(now()) @map("granted_at")
+  revokedAt  DateTime? @map("revoked_at")
+  source     String
+  evidence   Json      @default("{}")
+
+  @@index([customerId, purpose])
+  @@map("consents")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  actorType  String   @map("actor_type")
+  actorId    String?  @map("actor_id")
+  businessId String?  @map("business_id") @db.Uuid
+  action     String
+  objectType String   @map("object_type")
+  objectId   String?  @map("object_id")
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([businessId, createdAt])
+  @@map("audit_log")
+}
+
+// =============================================================================
+// PRODUCTS / SERVICES / INVENTORY
+// =============================================================================
+
+model ProductCategory {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  parentId String?           @map("parent_id")
+  parent   ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children ProductCategory[] @relation("CategoryHierarchy")
+
+  name        String
+  // Added for the Food Menu Domain Foundation (Phase 4) — a short optional
+  // blurb for a menu category ("Kotas", "Drinks"). This model predates that
+  // milestone and was otherwise completely unused in application code
+  // (confirmed by audit); reused rather than duplicated into a new
+  // "MenuCategory" table. `parentId`/`children` below remain deliberately
+  // unused by every category-facing caller — no nested categories/category
+  // trees are built this phase, by application-level restraint rather than
+  // a schema change, since removing them would be a larger, riskier edit
+  // for no present benefit.
+  description String?
+  slug        String?
+  imageUrl    String?  @map("image_url")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@unique([businessId, name])
+  @@index([businessId])
+  @@map("product_categories")
+}
+
+model Product {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  categoryId String?          @map("category_id")
+  category   ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  name           String
+  description    String?
+  imageUrl       String?  @map("image_url")
+  images         String[]
+  sku            String?
+  barcode        String?
+  price          Decimal  @db.Decimal(10, 2)
+  costPrice      Decimal? @map("cost_price") @db.Decimal(10, 2)
+  compareAtPrice Decimal? @map("compare_at_price") @db.Decimal(10, 2)
+
+  isActive     Boolean   @default(true) @map("is_active")
+  isFeatured   Boolean   @default(false) @map("is_featured")
+  sortOrder    Int       @default(0) @map("sort_order")
+  trackStock   Boolean   @default(true) @map("track_stock")
+  /// Tab 5 — "sold out today": stays listed but can't be ordered until this
+  /// instant (end of the trading day in SAST). Null = available. Distinct
+  /// from isActive (hide), which removes it from the storefront altogether.
+  soldOutUntil DateTime? @map("sold_out_until")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  inventory    InventoryItem?
+  orderItems   OrderItem[]
+  variants     ProductVariant[]
+  // Food Menu Domain Foundation (Phase 4) — the explicit assignment model
+  // §6 asks for (reuse + per-product sort order), never a duplicated copy
+  // of the group itself. Empty for every product until an owner attaches
+  // one — see ProductOptionGroup's own comment on backward compatibility.
+  optionGroups ProductOptionGroup[]
+
+  @@unique([businessId, sku])
+  @@index([businessId])
+  @@index([businessId, categoryId])
+  @@index([businessId, isActive])
+  @@map("products")
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  name      String
+  sku       String?
+  price     Decimal  @db.Decimal(10, 2)
+  stock     Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+// ---------------------------------------------------------------------------
+// Food Menu Domain Foundation (Phase 4) — reusable menu option groups
+// ("Choose your size", "Extras") and their options, attached to Product via
+// the explicit ProductOptionGroup join below. Never a duplicate copy of
+// Product itself (§2) — Product remains the one sellable base item.
+// ---------------------------------------------------------------------------
+
+enum MenuOptionSelectionType {
+  SINGLE
+  MULTIPLE
+}
+
+model MenuOptionGroup {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name          String
+  selectionType MenuOptionSelectionType @default(SINGLE) @map("selection_type")
+  // minSelections/maxSelections are the one source of truth for required-vs-
+  // optional (§4: "use min/max to express optional/required behaviour") —
+  // deliberately no separate `required` boolean that could drift out of
+  // sync with them. minSelections >= 1 means required; the UI derives the
+  // word "Required"/"Optional" from this, never stores it twice.
+  minSelections Int                     @default(0) @map("min_selections")
+  maxSelections Int?                    @map("max_selections")
+  sortOrder     Int                     @default(0) @map("sort_order")
+  isActive      Boolean                 @default(true) @map("is_active")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+
+  options          MenuOption[]
+  products         ProductOptionGroup[]
+  orderItemOptions OrderItemOption[]
+
+  @@index([businessId])
+  @@index([businessId, isActive])
+  @@map("menu_option_groups")
+}
+
+model MenuOption {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  groupId String          @map("group_id")
+  group   MenuOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  name       String
+  // Never negative (§24 — "do not implement negative discount modifiers
+  // unless a genuine current need exists"); enforced in menu-options.service.ts,
+  // same "authoritative server-side, not just a DB constraint" posture the
+  // rest of this codebase's money fields already use.
+  priceDelta Decimal  @default(0) @map("price_delta") @db.Decimal(10, 2)
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  orderItemOptions OrderItemOption[]
+
+  @@index([groupId])
+  @@index([businessId])
+  @@map("menu_options")
+}
+
+/**
+ * The explicit Product <-> MenuOptionGroup assignment (§6) — lets the same
+ * reusable group (e.g. "Choose size") attach to several products, each with
+ * its own sort order, without duplicating the group. A Product with zero
+ * rows here has zero configured options — the exact backward-compatible
+ * shape every existing Food product already has (§19), no backfill needed.
+ */
+model ProductOptionGroup {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  productId String          @map("product_id")
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  groupId   String          @map("group_id")
+  group     MenuOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([productId, groupId])
+  @@index([businessId])
+  @@index([productId])
+  @@map("product_option_groups")
+}
+
+model Service {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  imageUrl    String? @map("image_url")
+  price       Decimal @db.Decimal(10, 2)
+  duration    Int?
+  bufferTime  Int?    @default(0) @map("buffer_time")
+  maxBookings Int?    @map("max_bookings")
+
+  isActive   Boolean  @default(true) @map("is_active")
+  isFeatured Boolean  @default(false) @map("is_featured")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  appointments Appointment[]
+  orderItems   OrderItem[]
+
+  @@index([businessId])
+  @@index([businessId, isActive])
+  @@map("services")
+}
+
+model InventoryItem {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  productId String  @unique @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  quantity    Int     @default(0)
+  minQuantity Int     @default(0) @map("min_quantity")
+  maxQuantity Int?    @map("max_quantity")
+  unit        String?
+  location    String?
+
+  lastRestockedAt DateTime? @map("last_restocked_at")
+  lastCountAt     DateTime? @map("last_count_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  movements StockMovement[]
+
+  @@index([businessId])
+  @@index([businessId, quantity])
+  @@map("inventory_items")
+}
+
+model StockMovement {
+  id              String         @id @default(cuid())
+  inventoryItemId String         @map("inventory_item_id")
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  staffId         String?        @map("staff_id")
+  staff           BusinessStaff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  type          StockMovementType
+  quantity      Int
+  previousQty   Int               @map("previous_qty")
+  newQty        Int               @map("new_qty")
+  unitCost      Decimal?          @map("unit_cost") @db.Decimal(10, 2)
+  note          String?
+  referenceId   String?           @map("reference_id")
+  referenceType String?           @map("reference_type")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([inventoryItemId])
+  @@index([createdAt])
+  @@map("stock_movements")
+}
+
+// =============================================================================
+// ORDERS — customer FK repointed to Membership (per-business relationship)
+// =============================================================================
+
+model Order {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  membershipId String?        @map("membership_id") @db.Uuid
+  membership   Membership?    @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  staffId      String?        @map("staff_id")
+  staff        BusinessStaff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  orderNumber String      @map("order_number")
+  status      OrderStatus @default(PENDING)
+  source      String?
+
+  subtotal     Decimal @db.Decimal(10, 2)
+  discount     Decimal @default(0) @db.Decimal(10, 2)
+  discountCode String? @map("discount_code")
+  tax          Decimal @default(0) @db.Decimal(10, 2)
+  total        Decimal @db.Decimal(10, 2)
+
+  // Defaults COLLECTION: every order created before this column existed was
+  // genuinely collection-style (no delivery concept existed at all) — a
+  // true backfill, not a guess. deliveryFee defaults 0 for the same reason.
+  // Frozen once written: nothing ever re-reads Business.settings to
+  // recompute an existing order's total, so a later change to the
+  // merchant's configured fee cannot alter a past order.
+  fulfilmentMethod OrderFulfilmentMethod @default(COLLECTION) @map("fulfilment_method")
+  deliveryFee      Decimal               @default(0) @map("delivery_fee") @db.Decimal(10, 2)
+
+  paymentMethod PaymentMethod? @map("payment_method")
+  paymentStatus PaymentStatus  @default(PENDING) @map("payment_status")
+  paymentRef    String?        @map("payment_ref")
+  paidAt        DateTime?      @map("paid_at")
+
+  notes     String?
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Caller-supplied, optional — same pattern as visits.idempotency_key
+  // (see 20260902160000_visit_idempotency_key): a retried storefront
+  // checkout submission (double-tap, refresh, slow-network retry) that
+  // reuses the same key returns the existing Order instead of creating a
+  // second one. NULL stays non-unique in a Postgres unique index, so
+  // every non-storefront (POS) order — which never sets this — is
+  // unaffected. Never authentication; never PII.
+  checkoutIdempotencyKey String? @map("checkout_idempotency_key")
+
+  // Which version of the platform Terms of Service the customer accepted at
+  // storefront checkout, and when (src/lib/legal/documents.ts). Null for
+  // POS / staff-created orders, which have no customer-facing acceptance.
+  // Frozen once written — a later Terms bump never rewrites past orders.
+  termsVersion    String?   @map("terms_version")
+  termsAcceptedAt DateTime? @map("terms_accepted_at")
+
+  items    OrderItem[]
+  review   Review?
+  delivery OrderDelivery?
+
+  paymentAttempts BusinessPaymentAttempt[]
+
+  @@unique([businessId, orderNumber])
+  @@unique([businessId, checkoutIdempotencyKey])
+  @@index([businessId])
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
+  @@index([businessId, paymentStatus])
+  @@index([membershipId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String @map("order_id")
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String?  @map("product_id")
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  serviceId String?  @map("service_id")
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  name      String
+  sku       String?
+  quantity  Int
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+  discount  Decimal @default(0) @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+  metadata  Json?
+
+  // Food Menu Domain Foundation (Phase 4) §14 — relational snapshot rows,
+  // deliberately not JSON on `metadata` above: a historical order must
+  // render "Large +R15, Cheese +R10" even after the option/group is
+  // renamed, re-priced, deactivated, or deleted. Relational rows (queryable,
+  // typed, indexable) were chosen over JSON because a future "how many
+  // Large Kotas sold this month" report becomes a normal query instead of
+  // a JSON-parsing scan — exactly the "materially improves queryability"
+  // bar this phase's spec sets for preferring rows over a blob.
+  options OrderItemOption[]
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+/**
+ * Immutable per-OrderItem option snapshot (§14). `optionId`/`groupId` are
+ * OPTIONAL, `onDelete: SetNull` — same historical-preservation pattern
+ * OrderItem.productId already uses — kept only for potential future
+ * traceability/analytics joins, NEVER read when rendering an order (Kitchen,
+ * confirmations, receipts all render the *Snapshot fields exclusively, so a
+ * renamed/re-priced/deleted/deactivated option can never change what a past
+ * order shows).
+ */
+model OrderItemOption {
+  id          String    @id @default(cuid())
+  orderItemId String    @map("order_item_id")
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  groupId  String?          @map("group_id")
+  group    MenuOptionGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  optionId String?          @map("option_id")
+  option   MenuOption?      @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
+  groupNameSnapshot  String   @map("group_name_snapshot")
+  optionNameSnapshot String   @map("option_name_snapshot")
+  priceDeltaSnapshot Decimal  @default(0) @map("price_delta_snapshot") @db.Decimal(10, 2)
+  sortOrder          Int      @default(0) @map("sort_order")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([orderItemId])
+  @@map("order_item_options")
+}
+
+/**
+ * A fulfilment domain associated with an Order — deliberately NOT another
+ * meaning for Order.staffId (which stays "who processed the order").
+ * driverStaffId is a completely separate assignment. One row per order for
+ * MVP (@@unique on orderId), created atomically with the Order in
+ * order.service.ts's createOrder for a DELIVERY checkout only — a
+ * COLLECTION order never gets one.
+ */
+model OrderDelivery {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  orderId String @unique @map("order_id")
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  driverStaffId String?        @map("driver_staff_id")
+  driverStaff   BusinessStaff? @relation(fields: [driverStaffId], references: [id], onDelete: SetNull)
+
+  status DeliveryStatus @default(UNASSIGNED)
+
+  // Snapshotted once at order-creation time from the checkout submission —
+  // never re-derived from a later-mutable customer profile (Membership has
+  // no address or phone field to pull from anyway; per the identity-core
+  // privacy boundary, businesses never see a raw customer phone number
+  // except what the customer themselves types into a request). contactPhone
+  // is what a driver's Call/WhatsApp action uses — with no snapshot here,
+  // there would be no phone number to act on at all.
+  deliveryAddressSnapshot String  @map("delivery_address_snapshot")
+  deliveryInstructions    String? @map("delivery_instructions")
+  contactPhone            String? @map("contact_phone")
+
+  // Snapshot of how the delivery fee was priced at checkout (delivery-quote.ts):
+  // the exact cents the customer agreed to, and the zone (if ZONE pricing) by
+  // id and name. Plain strings, not a relation — a zone may be renamed or
+  // disabled later without rewriting history.
+  deliveryFeeCents Int?    @map("delivery_fee_cents")
+  deliveryZoneId   String? @map("delivery_zone_id")
+  deliveryZoneName String? @map("delivery_zone_name")
+
+  assignedAt    DateTime? @map("assigned_at")
+  pickedUpAt    DateTime? @map("picked_up_at")
+  deliveredAt   DateTime? @map("delivered_at")
+  failedAt      DateTime? @map("failed_at")
+  failureReason String?   @map("failure_reason")
+
+  // Geocoded once from deliveryAddressSnapshot at order-creation time —
+  // best-effort (null means "never resolved", never a sentinel 0/0). Used
+  // for PER_KM delivery pricing and as the tracking map's destination pin.
+  deliveryLat Float? @map("delivery_lat")
+  deliveryLng Float? @map("delivery_lng")
+
+  // Live position, polled from the driver's own device while status is
+  // PICKED_UP. Deliberately not a history table — there is no breadcrumb/
+  // replay requirement, this is already 1:1 with the delivery, and the
+  // fields are cleared the moment the delivery ends (markDelivered /
+  // reportFailure) since there is no reason to retain a driver's personal
+  // location after the fact.
+  driverLat               Float?    @map("driver_lat")
+  driverLng               Float?    @map("driver_lng")
+  driverLocationUpdatedAt DateTime? @map("driver_location_updated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// Skhokholetha network deliveries for this request (at most one unfinished).
+  networkDeliveries NetworkDelivery[]
+
+  /// The customer's own key (issued only to the customer at checkout, never to
+  /// the business): HMAC(server secret, id, nonce). Only its hash is stored, for
+  /// lookup. It unlocks the customer's delivery page and drop-off code.
+  customerKeyNonce String? @map("customer_key_nonce")
+  customerKeyHash  String? @unique @map("customer_key_hash")
+
+  /// Tab 5 — proof-of-delivery code for the business's own drivers (delivery-code.ts).
+  dropoffCode OrderDeliveryCode?
+
+  @@index([businessId])
+  @@index([businessId, status])
+  @@index([driverStaffId])
+  @@map("order_deliveries")
+}
+
+// =============================================================================
+// APPOINTMENTS
+// =============================================================================
+
+model Appointment {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  membershipId String?        @map("membership_id") @db.Uuid
+  membership   Membership?    @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  staffId      String?        @map("staff_id")
+  staff        BusinessStaff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  serviceId    String?        @map("service_id")
+  service      Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  status    AppointmentStatus @default(SCHEDULED)
+  startTime DateTime          @map("start_time")
+  endTime   DateTime          @map("end_time")
+  duration  Int
+  price     Decimal?          @db.Decimal(10, 2)
+
+  reminderSent   Boolean   @default(false) @map("reminder_sent")
+  reminderSentAt DateTime? @map("reminder_sent_at")
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Same as orders.terms_version: the Terms version accepted on the public
+  // booking form. Null for appointments staff create in the console.
+  termsVersion    String?   @map("terms_version")
+  termsAcceptedAt DateTime? @map("terms_accepted_at")
+
+  review Review?
+
+  @@index([businessId])
+  @@index([businessId, startTime])
+  @@index([staffId, startTime])
+  @@index([membershipId])
+  @@map("appointments")
+}
+
+// =============================================================================
+// REVIEWS — one review per completed transaction, attributed to the
+// pairwise Membership (never the global Customer). A customer reaches the
+// submission form via an unguessable link built from the order/appointment
+// id (same trust model as /store/pay/[orderId]) — this app has no customer
+// login to gate it behind. Exactly one of orderId/appointmentId is set,
+// enforced in review.service's Zod schema (Prisma has no XOR constraint).
+// =============================================================================
+
+model Review {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  membershipId String     @map("membership_id") @db.Uuid
+  membership   Membership @relation(fields: [membershipId], references: [id])
+
+  orderId       String?      @unique @map("order_id")
+  order         Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  appointmentId String?      @unique @map("appointment_id")
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  rating  Int
+  comment String?
+
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([businessId, isPublished, createdAt])
+  @@index([membershipId])
+  @@map("reviews")
+}
+
+// =============================================================================
+// METRICS & NOTIFICATIONS
+// =============================================================================
+
+model BusinessMetric {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  date      DateTime @db.Date
+  metricKey String   @map("metric_key")
+  value     Decimal  @db.Decimal(15, 4)
+  metadata  Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([businessId, date, metricKey])
+  @@index([businessId, date])
+  @@map("business_metrics")
+}
+
+model BusinessNotification {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  type      String
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean   @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  /// Per-staff read markers (notifications.ts). `isRead` above is the legacy
+  /// business-wide flag, kept for existing readers.
+  reads BusinessNotificationRead[]
+
+  @@index([businessId, isRead])
+  @@index([businessId, createdAt])
+  @@map("business_notifications")
+}
+
+/// One row per (notification, staff member) once that person has seen it —
+/// so one teammate reading a notification never hides it from another.
+/// staffId is BusinessStaff.id, or the owner's AppUser.id (the owner token).
+model BusinessNotificationRead {
+  notificationId String               @map("notification_id")
+  notification   BusinessNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  staffId        String               @map("staff_id")
+  readAt         DateTime             @default(now()) @map("read_at")
+
+  @@id([notificationId, staffId])
+  @@index([staffId])
+  @@map("business_notification_reads")
+}
+
+// Owner ↔ AI buddy chat history. One running conversation per business for
+// now; kept as a table so the owner can scroll back over earlier advice.
+model AssistantConversation {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  /// Whose conversation this is (the session's staffId — an owner's is their
+  /// AppUser id). One person never sees another's chat: what the buddy may
+  /// tell a manager isn't what it may tell kitchen staff. NULL = a chat from
+  /// before conversations were per person; only an owner sees those.
+  staffId    String?  @map("staff_id")
+
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  messages  AssistantMessage[]
+
+  @@index([businessId, updatedAt])
+  @@index([businessId, staffId, updatedAt])
+  @@map("assistant_conversations")
+}
+
+model AssistantMessage {
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String                @map("conversation_id") @db.Uuid
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role      String // "owner" | "buddy"
+  content   String
+  source    String? // "rules" | "model" — which provider answered a buddy message
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([conversationId, createdAt])
+  @@map("assistant_messages")
+}
+
+// =============================================================================
+// PLATFORM ENQUIRIES — "what you can get" showcase → the owner's queue
+// -----------------------------------------------------------------------------
+// Deliberately NOT a BusinessNotification: those require a businessId, and most
+// enquiries arrive from the public landing page before the person has registered
+// a business at all. businessId is therefore optional and set only when a
+// signed-in tenant enquires from their dashboard.
+//
+// This table holds contact details a person typed about themselves — it is
+// personal information under POPIA. It is NOT part of the customer identity core
+// and must never be joined to it.
+// =============================================================================
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  CLOSED
+}
+
+model PlatformEnquiry {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  /// Set only when a signed-in tenant enquires from their dashboard; null for
+  /// public landing-page enquiries.
+  businessId String? @map("business_id") @db.Uuid
+
+  name         String
+  phone        String
+  email        String?
+  businessName String? @map("business_name")
+
+  /// What they picked in the showcase — a plan name (STARTER…) or a service
+  /// slug (website, whatsapp-ordering, voice-agent, content, speed-to-lead).
+  interest String
+  message  String?
+
+  status EnquiryStatus @default(NEW)
+  /// Where it came from: landing | showcase | dashboard
+  source String        @default("showcase")
+
+  handledAt DateTime? @map("handled_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([status, createdAt])
+  @@index([businessId])
+  @@map("platform_enquiries")
+}
+
+// =============================================================================
+// BUSINESS PROFILE - the onboarding interview an owner answers the first time
+// they land on the dashboard, and the storefront brief written from it.
+//
+// Deliberately a separate table rather than more columns on `businesses`:
+// this is qualitative, evolving, answer-shaped data (the question set will
+// change as we learn what actually predicts a good storefront), whereas
+// `businesses` is the stable operational record every other module joins
+// against. Keeping them apart means iterating on the interview never
+// migrates the hot table.
+// =============================================================================
+
+enum InterviewStatus {
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+/// Whether the storefront brief was written by a live model or by the
+/// deterministic fallback - surfaced in the UI so we never imply a model
+/// wrote something it didn't (same honesty rule as the assistant module).
+enum BriefSource {
+  RULES
+  MODEL
+}
+
+model BusinessProfile {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId String   @unique @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  status InterviewStatus @default(IN_PROGRESS)
+
+  /// Raw interview answers, keyed by question id (see onboarding/questions.ts).
+  /// Json rather than a column per question precisely because the question
+  /// set is expected to change - a new question is a code change, not a
+  /// migration. Values are string | string[].
+  answers Json @default("{}")
+
+  /// How far the owner got, so re-opening resumes instead of restarting.
+  currentStep Int @default(0) @map("current_step")
+
+  /// The storefront brief generated from `answers` - this is what the
+  /// storefront generator reads to build pages for a business whose shape
+  /// doesn't match one of the default shop templates.
+  brief            String?
+  briefSource      BriefSource? @map("brief_source")
+  briefGeneratedAt DateTime?    @map("brief_generated_at")
+
+  /// Which entry in storefront-templates.ts this business's storefront
+  /// renders. Defaults to 'CLASSIC' (today's single-page layout) for every
+  /// row, including the one-time backfill of existing businesses at
+  /// migration time - so shipping this column changes no live storefront
+  /// until an owner explicitly picks something else in the Design Wizard.
+  activeTemplateId String @default("CLASSIC") @map("active_template_id")
+
+  /// An AI-generated (or rules-fallback) template shape, produced when a
+  /// business's category doesn't fit a built-in template - see
+  /// template-generation-provider.ts. Only meaningful once
+  /// activeTemplateId references a generated shape; most rows leave this
+  /// null forever.
+  generatedTemplate       Json?        @map("generated_template")
+  generatedTemplateSource BriefSource? @map("generated_template_source")
+  generatedTemplateAt     DateTime?    @map("generated_template_at")
+
+  /// Set once this business's accepted generated template has been
+  /// promoted (after admin review - see GeneratedStorefrontTemplate) into
+  /// the shared library. Never changes this business's own rendering.
+  promotedTemplateId String? @map("promoted_template_id")
+
+  completedAt DateTime? @map("completed_at")
+  /// Set by "Remind me later" - the dashboard then offers to resume rather
+  /// than reopening the dialog on every visit.
+  skippedAt   DateTime? @map("skipped_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("business_profiles")
+}
+
+// =============================================================================
+// MERCHANT-DIRECT PAYMENTS
+//
+// Each business connects its OWN payment-provider account, so a customer's
+// money settles to that merchant, never to a shared platform account. Two
+// models carry this: a connection (whose account, with credentials sealed at
+// rest) and an attempt (one specific handoff to the provider).
+//
+// Both use onDelete: Restrict throughout. Payment history is a reconciliation
+// and dispute record: deleting a business or an order must not be able to
+// destroy evidence of money that moved, nor break the validation of a
+// notification still in flight.
+// =============================================================================
+
+enum PaymentProvider {
+  PAYFAST
+}
+
+/// Sandbox and live are separate PayFast accounts with different credentials,
+/// so a connection is always for one or the other — never both.
+enum PaymentEnvironment {
+  SANDBOX
+  LIVE
+}
+
+enum PaymentConnectionStatus {
+  /// Credentials saved but unproven. Never enough to take a customer payment.
+  PENDING_VERIFICATION
+  /// Proven by a completed notification in this environment.
+  VERIFIED
+  INVALID
+  /// Owner switched it off; credentials retained.
+  DISABLED
+  /// Rotated or disconnected. Terminal and RETAINED — an in-flight
+  /// notification must still resolve against the row it was submitted with.
+  SUPERSEDED
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  SUBMITTED
+  COMPLETE
+  FAILED
+  CANCELLED
+  EXPIRED
+  /// The provider confirmed real money for this attempt, but it could not be
+  /// applied to its order (already paid by another attempt, order cancelled,
+  /// or the amount differs). The merchant owes the customer a refund.
+  REFUND_DUE
+}
+
+/// What the ITN handler did with one VERIFIED notification (signature and
+/// provider postback both passed). Unverified traffic is never recorded.
+enum PaymentEventOutcome {
+  SETTLED
+  /// The same notification again (a gateway retry) — nothing changed.
+  DUPLICATE_NOTIFICATION
+  /// FAILED / CANCELLED reported by the provider.
+  CLOSED
+  REFUND_DUE
+  CONNECTION_VERIFIED
+  /// A status the handler doesn't act on (e.g. PENDING).
+  IGNORED
+}
+
+/// A verification attempt is the owner paying their own account on purpose to
+/// prove it can receive money. It is never a customer's order.
+enum PaymentAttemptPurpose {
+  CUSTOMER_ORDER
+  LIVE_VERIFICATION
+}
+
+model BusinessPaymentConnection {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
+
+  provider    PaymentProvider
+  environment PaymentEnvironment
+
+  /// Not a secret — the provider requires it in the payment submission itself.
+  merchantId String @map("merchant_id")
+
+  /// Sealed with lib/crypto/secret-box (AES-256-GCM). Never logged, never
+  /// returned to a caller, decrypted only inside a sign or verify call.
+  merchantKeyCipher String  @map("merchant_key_cipher")
+  /// Mandatory for LIVE — enforced by a CHECK constraint in the migration,
+  /// because signature verification without a passphrase is not a meaningful
+  /// check on a live merchant account.
+  passphraseCipher  String? @map("passphrase_cipher")
+  keyVersion        Int     @map("key_version")
+
+  status              PaymentConnectionStatus @default(PENDING_VERIFICATION)
+  verifiedAt          DateTime?               @map("verified_at")
+  /// Which attempt proved it — so "verified" is always traceable to an event.
+  verifiedByAttemptId String?                 @map("verified_by_attempt_id")
+  lastError           String?                 @map("last_error")
+  /// Set when rotated or disconnected. The row is never deleted.
+  retiredAt           DateTime?               @map("retired_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  attempts BusinessPaymentAttempt[]
+
+  @@index([businessId, provider, environment])
+  @@index([status])
+  @@map("business_payment_connections")
+}
+
+model BusinessPaymentAttempt {
+  id String @id @default(cuid())
+
+  /// The reference sent to the provider as its payment id. Unique PER ATTEMPT,
+  /// not per order: an order may be tried several times (failed, cancelled,
+  /// retried), and a per-order reference would make those indistinguishable
+  /// and route a late notification to the wrong one.
+  reference String @unique
+
+  /// Null only for LIVE_VERIFICATION, which proves an account rather than
+  /// paying for anything.
+  orderId String? @map("order_id")
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  businessId   String                    @map("business_id") @db.Uuid
+  business     Business                  @relation(fields: [businessId], references: [id], onDelete: Restrict)
+  connectionId String                    @map("connection_id")
+  connection   BusinessPaymentConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+
+  purpose     PaymentAttemptPurpose @default(CUSTOMER_ORDER)
+  provider    PaymentProvider
+  environment PaymentEnvironment
+
+  /// Copied at creation so the receiving account stays knowable even after the
+  /// connection is rotated. This is the reconciliation record.
+  merchantIdSnapshot String @map("merchant_id_snapshot")
+
+  expectedAmount Decimal @map("expected_amount") @db.Decimal(10, 2)
+  currency       String  @default("ZAR")
+
+  status            PaymentAttemptStatus @default(CREATED)
+  /// The provider's own payment id. Unique per provider — this is what makes a
+  /// replayed notification a no-op rather than a second settlement.
+  providerPaymentId String?              @map("provider_payment_id")
+  failureReason     String?              @map("failure_reason")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  submittedAt DateTime? @map("submitted_at")
+  verifiedAt  DateTime? @map("verified_at")
+
+  events           BusinessPaymentEvent[]
+  /// Tab 5 — set once the merchant (or FINANCE) has refunded a REFUND_DUE attempt.
+  refundResolution PaymentRefundResolution?
+
+  @@unique([provider, providerPaymentId])
+  @@index([orderId])
+  @@index([businessId])
+  @@index([connectionId])
+  @@index([status])
+  @@map("business_payment_attempts")
+}
+
+/// Append-only record of every verified provider notification — the
+/// reconciliation trail. An attempt says what we submitted; events say what
+/// the provider told us about it, including a second real payment on the
+/// same reference (a resubmitted form), which an attempt alone can't hold.
+/// No buyer personal information is stored here.
+model BusinessPaymentEvent {
+  id         String                 @id @default(cuid())
+  businessId String                 @map("business_id") @db.Uuid
+  business   Business               @relation(fields: [businessId], references: [id], onDelete: Restrict)
+  attemptId  String                 @map("attempt_id")
+  attempt    BusinessPaymentAttempt @relation(fields: [attemptId], references: [id], onDelete: Restrict)
+
+  provider          PaymentProvider
+  environment       PaymentEnvironment
+  providerPaymentId String              @map("provider_payment_id")
+  /// The provider's own status word, verbatim (COMPLETE, FAILED, ...).
+  providerStatus    String              @map("provider_status")
+  amountGross       Decimal?            @map("amount_gross") @db.Decimal(10, 2)
+  outcome           PaymentEventOutcome
+  detail            String?
+  receivedAt        DateTime            @default(now()) @map("received_at")
+
+  /// A gateway retry of the same notification records nothing new.
+  @@unique([attemptId, providerPaymentId, providerStatus])
+  @@index([businessId, receivedAt])
+  @@index([outcome])
+  @@map("business_payment_events")
+}
+
+// =============================================================================
+// STOREFRONT REVISIONS — the Storefront Intelligence Engine's output. A
+// revision holds a validated StorefrontSpec (src/modules/storefront-spec):
+// structured intent only, never code or markup. The existing Shopfront
+// renderer renders it. AI output is only ever a DRAFT; a merchant previews,
+// edits, approves and publishes. Publishing applies the spec's projection to
+// the live storefront settings in one transaction.
+// =============================================================================
+
+enum StorefrontRevisionStatus {
+  DRAFT
+  PUBLISHED
+  /// Superseded by a later publish, or a discarded draft. Kept as history.
+  ARCHIVED
+}
+
+enum StorefrontRevisionSource {
+  /// Level B — the AI composed the storefront (template, sections, copy, style).
+  AI_GENERATED
+  /// Level A — the AI improved copy within the current template and layout.
+  AI_ASSISTED
+  /// The deterministic planner alone (no model, or the model's output was rejected).
+  RULES
+}
+
+model StorefrontRevision {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// Per-business, increasing.
+  version Int
+  status  StorefrontRevisionStatus @default(DRAFT)
+  source  StorefrontRevisionSource
+
+  spec         Json
+  /// The spec exactly as the engine produced it, before any merchant edit —
+  /// so the learning system can see what merchants change about AI output.
+  originalSpec Json?   @map("original_spec")
+  /// The last validation report (errors / warnings / missing information).
+  validation   Json
+  /// Why a model proposal was rejected, when source fell back to RULES.
+  aiNote       String? @map("ai_note")
+
+  createdByStaffId   String?   @map("created_by_staff_id")
+  publishedByStaffId String?   @map("published_by_staff_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  publishedAt        DateTime? @map("published_at")
+
+  @@unique([businessId, version])
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
+  @@map("storefront_revisions")
+}
+
+// =============================================================================
+// STOREFRONT LEARNING — privacy by design. Behaviour is stored ONLY as daily
+// counters per business: no raw event log, no visitor or customer
+// identifier, no IP, no user agent, no cookies. Nothing here can tell one
+// visitor from another. Retained for STOREFRONT_STATS_RETENTION_DAYS, then
+// deleted (src/modules/storefront-learning/retention.ts).
+// =============================================================================
+
+enum StorefrontEventType {
+  PAGE_VIEW
+  PRODUCT_VIEW
+  CTA_CLICK
+  ADD_TO_BASKET
+  CHECKOUT_START
+  /// Recorded server-side when an order is created.
+  ORDER_PLACED
+  /// Recorded server-side when a booking is created.
+  BOOKING_SUBMITTED
+  /// WhatsApp/call enquiry taps (enquiry template).
+  ENQUIRY_CLICK
+  /// Recorded server-side when a quote, enquiry, pickup or callback request is saved (Tab 7).
+  LEAD_SUBMITTED
+}
+
+/// One counter: how many times `event` happened on this day, for this
+/// storefront version, page, section and catalogue item, on this device
+/// class. Absent dimensions are '' (not NULL) so the unique key works.
+model StorefrontDailyStat {
+  id         String              @id @default(cuid())
+  businessId String              @map("business_id") @db.Uuid
+  business   Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  day        DateTime            @db.Date
+  /// The published storefront revision live at the time ('' = none published).
+  revisionId String              @default("") @map("revision_id")
+  templateId String              @default("") @map("template_id")
+  event      StorefrontEventType
+  page       String              @default("")
+  section    String              @default("")
+  /// The business's own product/service id — catalogue data, never a person.
+  itemId     String              @default("") @map("item_id")
+  /// MOBILE | DESKTOP | '' — coarse, from screen width, never the user agent.
+  device     String              @default("")
+  count      Int                 @default(0)
+
+  @@unique([businessId, day, revisionId, templateId, event, page, section, itemId, device])
+  @@index([businessId, day])
+  @@index([day])
+  @@map("storefront_daily_stats")
+}
+
+enum StorefrontPatternStatus {
+  /// Detected from evidence; awaiting platform review.
+  CANDIDATE
+  APPROVED
+  REJECTED
+  /// Was approved, no longer used.
+  RETIRED
+}
+
+/// A storefront STRUCTURE (template, section order/visibility, main action)
+/// that performed well across several businesses. Never a merchant's copy,
+/// colours, name or catalogue. Becomes reusable only after platform approval.
+model StorefrontPatternCandidate {
+  id         String                  @id @default(cuid())
+  /// Stable hash of `pattern` — one row per distinct structure.
+  signature  String                  @unique
+  vertical   String
+  templateId String                  @default("") @map("template_id")
+  pattern    Json
+  /// Aggregate evidence only: business count, views, conversions, rates, lift, window.
+  evidence   Json
+  status     StorefrontPatternStatus @default(CANDIDATE)
+  reviewNote String?                 @map("review_note")
+  reviewedBy String?                 @map("reviewed_by")
+  reviewedAt DateTime?               @map("reviewed_at")
+  detectedAt DateTime                @default(now()) @map("detected_at")
+  updatedAt  DateTime                @updatedAt @map("updated_at")
+
+  @@index([vertical, status])
+  @@map("storefront_pattern_candidates")
+}
+
+// =============================================================================
+// BUSINESS BUDDY ACTIONS — prepare → confirm → execute
+// -----------------------------------------------------------------------------
+// A change the buddy suggested, prepared for ONE person, shown to them as a
+// preview, and applied only when they confirm. Applying re-checks the
+// person's permission and the target's business at that moment, then runs
+// the same service call the dashboard uses. Denied attempts are kept too —
+// this table is the trail of everything the buddy prepared or did.
+// =============================================================================
+
+enum BuddyActionStatus {
+  PREPARED
+  APPLIED
+  DENIED
+  FAILED
+  EXPIRED
+  CANCELLED
+}
+
+model BuddyAction {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// The session's staffId (an owner's AppUser id) — only they may apply it.
+  actorId      String  @map("actor_id")
+  actorIsOwner Boolean @map("actor_is_owner")
+
+  kind    String
+  params  Json
+  preview Json?
+  status  BuddyActionStatus @default(PREPARED)
+  /// Why it was denied or failed, in the words shown to the person.
+  error   String?
+
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  decidedAt DateTime? @map("decided_at")
+
+  @@index([businessId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("buddy_actions")
+}
+
+// =============================================================================
+// RATE LIMITING — fixed-window counters shared by every server instance
+// (src/lib/rate-limit.ts). `key` is a SHA-256 of rule + identifier: no IPs,
+// emails or phone numbers are stored. Old windows are purged daily.
+// =============================================================================
+
+model RateLimitBucket {
+  key         String
+  windowStart DateTime @map("window_start")
+  count       Int      @default(0)
+
+  @@id([key, windowStart])
+  @@index([windowStart])
+  @@map("rate_limit_buckets")
+}
+
+// =============================================================================
+// SKHOKHOLETHA — the Skhokho delivery network (docs/skhokholetha.md)
+// -----------------------------------------------------------------------------
+// A driver is an existing AppUser with a DriverProfile. A network delivery
+// hangs 1:1 off an OrderDelivery (the delivery request a DELIVERY order
+// already creates). Status changes only through the server state machine
+// (src/modules/skhokholetha/state-machine.ts), each one a conditional update
+// plus one delivery_events row.
+// =============================================================================
+
+enum DriverVerificationStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DriverAvailability {
+  OFFLINE
+  ONLINE
+  BUSY
+  PAUSED
+}
+
+enum VehicleType {
+  BICYCLE
+  SCOOTER
+  MOTORCYCLE
+  CAR
+  BAKKIE
+}
+
+enum DriverDocumentKind {
+  ID_DOCUMENT
+  DRIVERS_LICENCE
+  VEHICLE_REGISTRATION
+}
+
+enum DriverDocumentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NetworkDeliveryStatus {
+  CREATED
+  SEARCHING
+  OFFERED
+  ASSIGNED
+  DRIVER_TO_PICKUP
+  ARRIVED_PICKUP
+  PICKED_UP
+  IN_TRANSIT
+  ARRIVED_DROPOFF
+  DELIVERED
+  CANCELLED
+  FAILED
+  RETURNING
+  RETURNED
+  DISPUTED
+}
+
+enum DeliveryOfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  WITHDRAWN
+}
+
+enum DriverLedgerType {
+  DELIVERY_EARNING
+  ADJUSTMENT
+  PAYOUT
+}
+
+enum DriverLedgerStatus {
+  /// Earned, inside the hold window (disputes).
+  PENDING
+  /// Can be paid out.
+  AVAILABLE
+  /// Included in a completed payout.
+  PAID
+  REVERSED
+}
+
+enum DriverPayoutStatus {
+  REQUESTED
+  PAID
+  FAILED
+}
+
+model DriverProfile {
+  id     String  @id @default(cuid())
+  userId String  @unique @map("user_id") @db.Uuid
+  user   AppUser @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  displayName String  @map("display_name")
+  /// E.164 (+27…). Never shown to customers; shown to the shop only for an assigned delivery.
+  phone       String?
+
+  /// Verification (who they are) and availability (whether working now) are separate on purpose.
+  verificationStatus DriverVerificationStatus @default(DRAFT) @map("verification_status")
+  availability       DriverAvailability       @default(OFFLINE)
+
+  /// Furthest pickup, in km, the driver wants offers for.
+  serviceRadiusKm Int @default(10) @map("service_radius_km")
+
+  /// Location: consent first; only the LATEST coarse position while online (no history).
+  locationConsentAt DateTime? @map("location_consent_at")
+  lastLat           Float?    @map("last_lat")
+  lastLng           Float?    @map("last_lng")
+  lastLocationAt    DateTime? @map("last_location_at")
+
+  /// Payout details. The account number is sealed (secret-box); only the last 4 digits are readable.
+  payoutBankName      String? @map("payout_bank_name")
+  payoutAccountHolder String? @map("payout_account_holder")
+  payoutBranchCode    String? @map("payout_branch_code")
+  payoutAccountCipher String? @map("payout_account_cipher")
+  payoutAccountLast4  String? @map("payout_account_last4")
+
+  /// Contact verification for drivers who signed up as drivers (owners are
+  /// already verified). Its own token — never the password-reset token.
+  emailVerifyTokenHash String?   @map("email_verify_token_hash")
+  emailVerifyExpiresAt DateTime? @map("email_verify_expires_at")
+
+  /// Current acceptance of the configured DRIVER_TERMS_VERSION / DRIVER_PRIVACY_VERSION
+  /// (the full history is in driver_legal_acceptances).
+  agreementVersion    String?   @map("agreement_version")
+  agreementAcceptedAt DateTime? @map("agreement_accepted_at")
+  privacyVersion      String?   @map("privacy_version")
+  privacyAcceptedAt   DateTime? @map("privacy_accepted_at")
+
+  submittedAt      DateTime? @map("submitted_at")
+  reviewedAt       DateTime? @map("reviewed_at")
+  reviewedBy       String?   @map("reviewed_by")
+  reviewNote       String?   @map("review_note")
+  suspendedAt      DateTime? @map("suspended_at")
+  suspensionReason String?   @map("suspension_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  vehicles         DriverVehicle[]
+  documents        DriverDocument[]
+  offers           DeliveryOffer[]
+  deliveries       NetworkDelivery[]
+  ledger           DriverLedgerEntry[]
+  payouts          DriverPayout[]
+  legalAcceptances DriverLegalAcceptance[]
+
+  @@index([verificationStatus])
+  @@index([availability])
+  @@map("driver_profiles")
+}
+
+model DriverVehicle {
+  id       String        @id @default(cuid())
+  driverId String        @map("driver_id")
+  driver   DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  type         VehicleType
+  registration String?
+  makeModel    String?     @map("make_model")
+  isActive     Boolean     @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([driverId])
+  @@map("driver_vehicles")
+}
+
+/// Identity and vehicle documents. Stored in the database — never in public
+/// storage — and served only to platform admins through an authorised route.
+model DriverDocument {
+  id       String        @id @default(cuid())
+  driverId String        @map("driver_id")
+  driver   DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  kind        DriverDocumentKind
+  status      DriverDocumentStatus @default(PENDING)
+  /// Sanitised display name only; never used as a path.
+  fileName    String               @map("file_name")
+  contentType String               @map("content_type")
+  sizeBytes   Int                  @map("size_bytes")
+  sha256      String
+  content     Bytes
+  expiresOn   DateTime?            @map("expires_on") @db.Date
+
+  uploadedAt DateTime  @default(now()) @map("uploaded_at")
+  reviewedAt DateTime? @map("reviewed_at")
+  reviewedBy String?   @map("reviewed_by")
+  reviewNote String?   @map("review_note")
+
+  @@index([driverId, kind])
+  @@map("driver_documents")
+}
+
+model NetworkDelivery {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
+
+  /// One non-finished network delivery per request (partial unique index in the migration);
+  /// a cancelled one doesn't block asking again.
+  orderDeliveryId String        @map("order_delivery_id")
+  orderDelivery   OrderDelivery @relation(fields: [orderDeliveryId], references: [id], onDelete: Restrict)
+  orderId         String        @map("order_id")
+
+  status   NetworkDeliveryStatus @default(CREATED)
+  driverId String?               @map("driver_id")
+  driver   DriverProfile?        @relation(fields: [driverId], references: [id], onDelete: Restrict)
+
+  /// Idempotency: the same request key for the same business returns the same delivery.
+  requestKey         String  @map("request_key")
+  requestedByStaffId String? @map("requested_by_staff_id")
+
+  pickupLat  Float @map("pickup_lat")
+  pickupLng  Float @map("pickup_lng")
+  dropoffLat Float @map("dropoff_lat")
+  dropoffLng Float @map("dropoff_lng")
+
+  /// The quote, frozen in integer cents at request time.
+  distanceMeters     Int  @map("distance_meters")
+  quoteFeeCents      Int  @map("quote_fee_cents")
+  platformFeeCents   Int  @map("platform_fee_cents")
+  driverEarningCents Int  @map("driver_earning_cents")
+  pricingSnapshot    Json @map("pricing_snapshot")
+  /// Parity record (docs/skhokholetha.md "Quote parity"): what the customer paid
+  /// for delivery, and what the shop covers when the network cost is higher.
+  customerFeeCents   Int? @map("customer_fee_cents")
+  merchantCostCents  Int? @map("merchant_cost_cents")
+
+  /// Codes are derived (HMAC) from a server secret + these nonces; never stored in plaintext.
+  pickupCodeNonce     String @map("pickup_code_nonce")
+  pickupCodeFailures  Int    @default(0) @map("pickup_code_failures")
+  dropoffCodeNonce    String @map("dropoff_code_nonce")
+  dropoffCodeFailures Int    @default(0) @map("dropoff_code_failures")
+
+  /// Customer tracking: the link token is derived (HMAC) from this nonce, so the
+  /// shop can be shown the link again; lookups use only its hash.
+  trackingNonce     String    @map("tracking_nonce")
+  trackingTokenHash String    @unique @map("tracking_token_hash")
+  trackingExpiresAt DateTime? @map("tracking_expires_at")
+
+  /// Latest driver position during an active delivery only — cleared when it ends.
+  driverLat        Float?    @map("driver_lat")
+  driverLng        Float?    @map("driver_lng")
+  driverLocationAt DateTime? @map("driver_location_at")
+
+  searchingAt       DateTime? @map("searching_at")
+  assignedAt        DateTime? @map("assigned_at")
+  arrivedPickupAt   DateTime? @map("arrived_pickup_at")
+  pickedUpAt        DateTime? @map("picked_up_at")
+  arrivedDropoffAt  DateTime? @map("arrived_dropoff_at")
+  deliveredAt       DateTime? @map("delivered_at")
+  endedAt           DateTime? @map("ended_at")
+  endReason         String?   @map("end_reason")
+  /// Last dispatch round attempted while SEARCHING — backs off empty rounds.
+  dispatchAttemptAt DateTime? @map("dispatch_attempt_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  offers DeliveryOffer[]
+  events DeliveryEvent[]
+  ledger DriverLedgerEntry[]
+
+  @@unique([businessId, requestKey])
+  @@index([orderDeliveryId])
+  @@index([status])
+  @@index([businessId, status])
+  @@index([driverId, status])
+  @@index([status, dispatchAttemptAt])
+  @@map("network_deliveries")
+}
+
+/// A time-limited offer of one delivery to one driver. Kept, so dispatch can be reconstructed.
+model DeliveryOffer {
+  id                String              @id @default(cuid())
+  networkDeliveryId String              @map("network_delivery_id")
+  networkDelivery   NetworkDelivery     @relation(fields: [networkDeliveryId], references: [id], onDelete: Cascade)
+  driverId          String              @map("driver_id")
+  driver            DriverProfile       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  status            DeliveryOfferStatus @default(PENDING)
+  /// Driver → pickup distance at the time of the offer.
+  distanceMeters    Int                 @map("distance_meters")
+  expiresAt         DateTime            @map("expires_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  respondedAt       DateTime?           @map("responded_at")
+
+  @@unique([networkDeliveryId, driverId])
+  @@index([driverId, status])
+  @@index([status, expiresAt])
+  @@map("delivery_offers")
+}
+
+/// Append-only history of a network delivery. Never carries codes or secrets.
+model DeliveryEvent {
+  id                String                 @id @default(cuid())
+  networkDeliveryId String                 @map("network_delivery_id")
+  networkDelivery   NetworkDelivery        @relation(fields: [networkDeliveryId], references: [id], onDelete: Restrict)
+  businessId        String                 @map("business_id") @db.Uuid
+  type              String
+  fromStatus        NetworkDeliveryStatus? @map("from_status")
+  toStatus          NetworkDeliveryStatus? @map("to_status")
+  /// SHOP | DRIVER | SYSTEM | ADMIN | CUSTOMER
+  actorType         String                 @map("actor_type")
+  actorId           String?                @map("actor_id")
+  data              Json?
+  createdAt         DateTime               @default(now()) @map("created_at")
+
+  @@index([networkDeliveryId, createdAt])
+  @@index([businessId, createdAt])
+  @@map("delivery_events")
+}
+
+/// Append-only, reconcilable earnings ledger. A driver's balance is the SUM of
+/// their entries — never a mutable balance field. `sourceKey` makes every
+/// entry idempotent (e.g. one earning per delivery).
+model DriverLedgerEntry {
+  id                String             @id @default(cuid())
+  driverId          String             @map("driver_id")
+  driver            DriverProfile      @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  networkDeliveryId String?            @map("network_delivery_id")
+  networkDelivery   NetworkDelivery?   @relation(fields: [networkDeliveryId], references: [id], onDelete: Restrict)
+  type              DriverLedgerType
+  status            DriverLedgerStatus @default(PENDING)
+  /// Integer cents; negative for payouts and reversals.
+  amountCents       Int                @map("amount_cents")
+  sourceKey         String             @unique @map("source_key")
+  /// Adjustments only: who made it, why, and the external reference (ticket, EFT ref).
+  createdBy         String?            @map("created_by")
+  reason            String?
+  reference         String?
+  payoutId          String?            @map("payout_id")
+  payout            DriverPayout?      @relation(fields: [payoutId], references: [id], onDelete: Restrict)
+  availableAt       DateTime?          @map("available_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+
+  @@index([driverId, createdAt])
+  @@index([driverId, status])
+  @@map("driver_ledger_entries")
+}
+
+/// Admin-controlled payouts. Bank details stay on the profile (sealed).
+model DriverPayout {
+  id          String             @id @default(cuid())
+  driverId    String             @map("driver_id")
+  driver      DriverProfile      @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  amountCents Int                @map("amount_cents")
+  status      DriverPayoutStatus @default(REQUESTED)
+  reference   String?
+  createdBy   String             @map("created_by")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  paidAt      DateTime?          @map("paid_at")
+
+  entries DriverLedgerEntry[]
+
+  @@index([driverId, createdAt])
+  @@map("driver_payouts")
+}
+
+enum DriverLegalKind {
+  TERMS
+  PRIVACY
+}
+
+/// Append-only record of each legal document version a driver accepted.
+/// Written only for the version configured at that moment (legal.ts).
+model DriverLegalAcceptance {
+  id          String          @id @default(cuid())
+  driverId    String          @map("driver_id")
+  driver      DriverProfile   @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  kind        DriverLegalKind
+  version     String
+  documentUrl String          @map("document_url")
+  acceptedAt  DateTime        @default(now()) @map("accepted_at")
+  /// sha256 of the client IP (never the raw address) and a trimmed user agent.
+  ipHash      String?         @map("ip_hash")
+  userAgent   String?         @map("user_agent")
+
+  @@unique([driverId, kind, version])
+  @@index([driverId, acceptedAt])
+  @@map("driver_legal_acceptances")
+}
+
+// ---------------------------------------------------------------------------
+// Platform administration: admin tiers + MFA, audit trail, background jobs
+// ---------------------------------------------------------------------------
+
+/// What a platform admin may do (src/modules/platform-admin/permissions.ts).
+enum PlatformAdminRole {
+  SUPER_ADMIN
+  OPERATIONS
+  FINANCE
+  SUPPORT
+}
+
+/// One per ADMIN app user. The role is read from here on every request —
+/// never from the session token. MFA (TOTP) is mandatory for every admin.
+model PlatformAdmin {
+  id     String            @id @default(cuid())
+  userId String            @unique @map("user_id") @db.Uuid
+  user   AppUser           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role   PlatformAdminRole @default(SUPPORT)
+
+  /// TOTP secret, sealed with secret-box. Pending = shown during enrolment, not yet confirmed.
+  mfaSecretCipher  String?   @map("mfa_secret_cipher")
+  mfaPendingCipher String?   @map("mfa_pending_cipher")
+  mfaEnabledAt     DateTime? @map("mfa_enabled_at")
+  /// Highest TOTP time-step accepted — a code can never be used twice.
+  mfaLastStep      Int?      @map("mfa_last_step")
+  /// Bumped on MFA reset or role change: every session issued before dies.
+  sessionEpoch     Int       @default(0) @map("session_epoch")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  recoveryCodes AdminRecoveryCode[]
+
+  @@map("platform_admins")
+}
+
+/// Single-use recovery codes. Only an HMAC of each code is stored.
+model AdminRecoveryCode {
+  id        String        @id @default(cuid())
+  adminId   String        @map("admin_id")
+  admin     PlatformAdmin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  codeHash  String        @unique @map("code_hash")
+  usedAt    DateTime?     @map("used_at")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@map("admin_recovery_codes")
+}
+
+enum AuditCategory {
+  ADMIN_ACTION
+  SECURITY
+  SYSTEM
+  /// A merchant or staff member's own meaningful action (content generated, AI change applied).
+  MERCHANT_ACTION
+}
+
+enum AuditOutcome {
+  SUCCESS
+  DENIED
+  FAILURE
+}
+
+/// The platform audit trail: privileged admin actions, security events and
+/// system failures. Append-only (trigger in the migration). Metadata passes
+/// through an allow-nothing-sensitive sanitiser (audit.ts) — never passwords,
+/// codes, tokens, cookies, keys or bank numbers. IPs are hashed.
+model PlatformAuditEvent {
+  id           String        @id @default(cuid())
+  category     AuditCategory
+  action       String
+  outcome      AuditOutcome  @default(SUCCESS)
+  /// platform_admin | staff | driver | system | anonymous
+  actorType    String        @map("actor_type")
+  actorId      String?       @map("actor_id")
+  businessId   String?       @map("business_id") @db.Uuid
+  resourceType String?       @map("resource_type")
+  resourceId   String?       @map("resource_id")
+  reason       String?
+  metadata     Json?
+  ipHash       String?       @map("ip_hash")
+  requestId    String?       @map("request_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([category, createdAt])
+  @@index([action, createdAt])
+  @@index([actorId, createdAt])
+  @@index([businessId, createdAt])
+  @@index([resourceType, resourceId])
+  @@map("platform_audit_events")
+}
+
+/// One row per background job run (daily cron tasks) — job health at a glance.
+model JobRun {
+  id         String    @id @default(cuid())
+  job        String
+  startedAt  DateTime  @default(now()) @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  ok         Boolean?
+  durationMs Int?      @map("duration_ms")
+  summary    Json?
+  error      String?
+
+  @@index([job, startedAt])
+  @@index([startedAt])
+  @@map("job_runs")
+}
+
+// ---------------------------------------------------------------------------
+// Delivery zones — area-based delivery pricing (src/modules/delivery/)
+// ---------------------------------------------------------------------------
+
+/// How a customer's address is matched to a zone. CUSTOMER_PICK: the customer
+/// chooses the area at checkout (the honest default where geocoding is
+/// unreliable). SUBURB_LIST: additionally matched by suburb names appearing in
+/// the typed address, so the right area is pre-selected.
+enum DeliveryZoneMatchKind {
+  CUSTOMER_PICK
+  SUBURB_LIST
+}
+
+/// One deliverable area with ONE exact fee (integer cents) — never a range.
+/// Configured by the merchant; nothing about any particular suburb lives in
+/// application code.
+model DeliveryZone {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name          String
+  matchKind     DeliveryZoneMatchKind @default(CUSTOMER_PICK) @map("match_kind")
+  /// Lower-cased suburb / area names used by SUBURB_LIST matching.
+  suburbs       String[]              @default([])
+  feeCents      Int                   @map("fee_cents")
+  /// Optional per-zone minimum basket (subtotal), integer cents.
+  minOrderCents Int?                  @map("min_order_cents")
+  active        Boolean               @default(true)
+  /// Lower comes first in pickers and wins when several SUBURB_LIST zones match.
+  priority      Int                   @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([businessId, name])
+  @@index([businessId, active, priority])
+  @@map("delivery_zones")
+}
+
+// =============================================================================
+// AI usage accounting and Content & Marketing (additive, 2026-10-21)
+// =============================================================================
+
+enum AiActorType {
+  STAFF
+  SYSTEM
+}
+
+/// What happened to one external model call. BLOCKED_* rows record a call
+/// that was refused BEFORE reaching the provider (no cost).
+enum AiUsageOutcome {
+  OK
+  FAILED
+  TIMEOUT
+  REJECTED_OUTPUT
+  BLOCKED_DISABLED
+  BLOCKED_ENTITLEMENT
+  BLOCKED_ALLOWANCE
+  BLOCKED_RATE_LIMIT
+}
+
+/// One external AI call (or refused call). Never holds the prompt or the
+/// answer — only who, what capability, which model, tokens, cost estimate
+/// and outcome, so usage can be metered per business and watched platform-wide.
+model AiUsageEvent {
+  id         String    @id @default(cuid())
+  /// Null for calls made before a business exists (the signup classifier).
+  businessId String?   @map("business_id") @db.Uuid
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  actorType AiActorType @map("actor_type")
+  /// The session's staffId (an owner's AppUser id) or null for SYSTEM.
+  actorId   String?     @map("actor_id")
+
+  /// The entitlement key the call runs under (e.g. content_generation, ai_business_buddy).
+  feature    String
+  /// The internal capability that made the call (e.g. content.social_post, assistant.chat).
+  capability String
+  /// Counts against the business's monthly generation allowance.
+  metered    Boolean @default(true)
+
+  provider               String @default("anthropic")
+  model                  String
+  inputTokens            Int    @default(0) @map("input_tokens")
+  outputTokens           Int    @default(0) @map("output_tokens")
+  /// Estimated provider cost in USD micro-dollars (1e-6 USD); null when the model's price is unknown.
+  estimatedCostUsdMicros Int?   @map("estimated_cost_usd_micros")
+
+  outcome        AiUsageOutcome
+  durationMs     Int?           @map("duration_ms")
+  /// Error class only (never the message body).
+  errorClass     String?        @map("error_class")
+  /// Caller-supplied key so a retried request is never charged twice.
+  idempotencyKey String?        @unique @map("idempotency_key")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([businessId, createdAt])
+  @@index([createdAt])
+  @@index([outcome, createdAt])
+  @@map("ai_usage_events")
+}
+
+enum ContentDraftType {
+  SOCIAL_POST
+  CAPTION
+  STATUS
+  PROMO
+  PRODUCT_DESCRIPTION
+  PRODUCT_TITLE
+  GENERAL
+}
+
+/// A content FORMAT, not an integration — nothing is posted anywhere by the platform.
+enum ContentChannel {
+  GENERAL
+  INSTAGRAM
+  FACEBOOK
+  WHATSAPP_STATUS
+  TIKTOK_CAPTION
+}
+
+enum ContentDraftStatus {
+  DRAFT
+  READY
+  PUBLISHED_MANUALLY
+  ARCHIVED
+}
+
+enum ContentSourceType {
+  BUSINESS
+  PRODUCT
+  CATEGORY
+  OFFER
+  CUSTOM
+  INSIGHT
+}
+
+enum ContentCampaignStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+/// A lightweight marketing campaign: a name, a goal, what it promotes and
+/// when. It groups drafts; it is not an advertising-platform object.
+model ContentCampaign {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name        String
+  goal        String?
+  productIds  String[]              @default([]) @map("product_ids")
+  categoryIds String[]              @default([]) @map("category_ids")
+  startsAt    DateTime?             @map("starts_at")
+  endsAt      DateTime?             @map("ends_at")
+  notes       String?
+  status      ContentCampaignStatus @default(PLANNED)
+
+  createdByStaffId String?  @map("created_by_staff_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  drafts ContentDraft[]
+
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
+  @@map("content_campaigns")
+}
+
+/// A piece of marketing content the merchant copies out and posts
+/// themselves. `PUBLISHED_MANUALLY` is the merchant's own record; the
+/// platform never publishes anywhere.
+model ContentDraft {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdByStaffId String? @map("created_by_staff_id")
+
+  type    ContentDraftType
+  channel ContentChannel     @default(GENERAL)
+  title   String
+  content String
+  status  ContentDraftStatus @default(DRAFT)
+
+  sourceType ContentSourceType @default(CUSTOM) @map("source_type")
+  /// The product / category id the draft was written about (same business only).
+  sourceId   String?           @map("source_id")
+
+  campaignId String?          @map("campaign_id")
+  campaign   ContentCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  /// Planning only — when the merchant intends to post it.
+  plannedFor  DateTime? @map("planned_for")
+  publishedAt DateTime? @map("published_at")
+
+  /// The accounting row behind an AI-written draft; null for hand-written drafts.
+  aiUsageEventId String? @map("ai_usage_event_id")
+  /// Caller-supplied key so a double-submitted generation yields one draft.
+  requestKey     String? @unique @map("request_key")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([businessId, status, createdAt])
+  @@index([businessId, plannedFor])
+  @@index([campaignId])
+  @@map("content_drafts")
+}
+
+// =============================================================================
+// ---- Tab 5 ---- (business console gaps and hardening; append-only)
+// =============================================================================
+
+/// A change to Business.email in flight (src/modules/tenant/business-email.ts).
+/// The new address sits in pendingEmail with a hashed, expiring token; only
+/// opening the link sent to it writes Business.email and verifiedAt. One row
+/// per business, created on the first request.
+model BusinessEmailChange {
+  businessId String   @id @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// The last address confirmed through this flow (also written to Business.email).
+  verifiedEmail String?   @map("verified_email")
+  verifiedAt    DateTime? @map("verified_at")
+  pendingEmail  String?   @map("pending_email")
+  /// SHA-256 of the raw link token; the raw token is only ever emailed.
+  tokenHash     String?   @unique @map("token_hash")
+  expiresAt     DateTime? @map("expires_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("business_email_changes")
+}
+
+/// Closes a REFUND_DUE payment attempt: the merchant (Settings › Payments) or
+/// a FINANCE admin records that the customer was refunded in PayFast, with a
+/// reason and the PayFast refund reference if there is one. A separate row —
+/// not a new status value — so a code rollback can still read every attempt,
+/// and the attempt itself (amount, provider id, verification time) stays
+/// immutable. "Still owed" = status REFUND_DUE with no row here.
+model PaymentRefundResolution {
+  attemptId  String                 @id @map("attempt_id")
+  attempt    BusinessPaymentAttempt @relation(fields: [attemptId], references: [id], onDelete: Restrict)
+  businessId String                 @map("business_id") @db.Uuid
+
+  resolvedAt        DateTime @default(now()) @map("resolved_at")
+  /// staff | platform_admin
+  resolvedByType    String   @map("resolved_by_type")
+  /// BusinessStaff.id / the owner's AppUser.id, or the admin's AppUser.id.
+  resolvedById      String   @map("resolved_by_id")
+  reason            String
+  /// The refund's own reference in PayFast, if the person has it.
+  providerRefundRef String?  @map("provider_refund_ref")
+
+  @@index([businessId, resolvedAt])
+  @@map("payment_refund_resolutions")
+}
+
+/// Proof of delivery for a business's OWN drivers — the same 6-digit,
+/// HMAC-derived drop-off code Skhokholetha uses (codes.ts), but keyed on the
+/// OrderDelivery. Issued when a driver is assigned; shown only on the
+/// customer's own delivery page (/delivery/<customer key>); the driver must
+/// enter it to mark the delivery done. Only the nonce is stored. A manager
+/// may complete a delivery without it, with a recorded reason.
+model OrderDeliveryCode {
+  orderDeliveryId String        @id @map("order_delivery_id")
+  orderDelivery   OrderDelivery @relation(fields: [orderDeliveryId], references: [id], onDelete: Cascade)
+  businessId      String        @map("business_id") @db.Uuid
+
+  nonce             String
+  failures          Int       @default(0)
+  confirmedAt       DateTime? @map("confirmed_at")
+  /// Set when a manager marked the delivery done without the customer's code.
+  overrideReason    String?   @map("override_reason")
+  overrideByStaffId String?   @map("override_by_staff_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([businessId])
+  @@map("order_delivery_codes")
+}
+
+// =============================================================================
+// ---- Tab 3 ----
+// Customer accounts (docs/plans/2026-10-21-workstreams.md, Tab 3). Append-only
+// below this line; other tabs add their own models under their own marker.
+
+/// One-time sign-in codes for storefront customers (customer-auth.service.ts).
+/// Keyed by the identifier the customer typed (an E.164 phone or an email),
+/// never by a customer row: the same phone is a separate `customers` row at
+/// every business, and sign-in must not pick one. Only a hash of the code is
+/// stored; rows expire in minutes and are purged by the daily cron.
+model CustomerLoginCode {
+  id         String    @id @default(cuid())
+  channel    String // phone | email
+  identifier String
+  codeHash   String    @map("code_hash")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([channel, identifier, createdAt])
+  @@index([expiresAt])
+  @@map("customer_login_codes")
+}
+
+// ---- Tab 4 ----
+
+/// ---------------------------------------------------------------------------
+/// Platform billing — a merchant paying Skhokho Laboratory.
+///
+/// Completely separate from a merchant's own customers paying THEM
+/// (Order / BusinessPaymentAttempt / BusinessPaymentConnection): different
+/// tables, different PayFast account, different reference namespace (skhp_
+/// here, skh_ there). Nothing in this section may ever be summed together
+/// with merchant GMV, Skhokholetha settlement or driver earnings.
+/// See docs/specs/2026-10-21-plans.md.
+///
+/// Every FK is Restrict: these are financial records and must never cascade
+/// away with a business row.
+/// ---------------------------------------------------------------------------
+
+enum PlatformInvoiceStatus {
+  /// Being assembled. Carries NO invoice number yet — a discarded draft must
+  /// not burn a number and leave a gap in the sequence.
+  DRAFT
+  /// Issued to the merchant. Number allocated, immutable from here.
+  OPEN
+  PAID
+  /// Given up on. Kept, never deleted; a late settlement can still revive it.
+  UNCOLLECTIBLE
+  /// Cancelled. Keeps its number — numbers are never reused.
+  VOID
+}
+
+enum PlatformInvoiceLineKind {
+  PLAN
+  /// A managed service's recurring monthly portion.
+  ADDON
+  /// A managed service's one-off setup fee.
+  SETUP
+  PRORATION
+  CREDIT
+}
+
+enum PlatformSettlementMethod {
+  /// The permanent first-class method — many SA small businesses will never
+  /// put a card on file.
+  EFT
+  CASH
+  /// Phase B only. Nothing writes this yet.
+  CARD
+  WRITE_OFF
+}
+
+enum BusinessAddonStatus {
+  ACTIVE
+  /// After grace. Suspended, never deleted.
+  SUSPENDED
+  ENDED
+}
+
+/// An invoice from Skhokho Laboratory to a merchant.
+///
+/// Amounts are a SNAPSHOT, not a join: repricing a plan must never
+/// retroactively change what someone was already billed.
+model PlatformInvoice {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
+
+  /// SKHL-INV-YYYY-NNNNNN. Null only while DRAFT.
+  number String? @unique
+
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  /// The plan code as it was when billed.
+  planCodeSnapshot String? @map("plan_code_snapshot")
+
+  subtotalCents Int    @map("subtotal_cents")
+  /// 0 when Skhokho Laboratory is not VAT registered. No VAT line is rendered
+  /// in that mode, and the document is not labelled "Tax Invoice".
+  vatCents      Int    @default(0) @map("vat_cents")
+  totalCents    Int    @map("total_cents")
+  currency      String @default("ZAR")
+
+  status PlatformInvoiceStatus @default(DRAFT)
+  issuedAt DateTime? @map("issued_at")
+  dueAt    DateTime? @map("due_at")
+  paidAt   DateTime? @map("paid_at")
+
+  /// Set when VOID or UNCOLLECTIBLE — always says why.
+  closedReason String? @map("closed_reason")
+
+  /// The last dunning notice sent, so a cron run that repeats (or one that
+  /// missed a day and catches up) never sends the same stage twice.
+  lastNoticeStage String?   @map("last_notice_stage")
+  lastNoticeAt    DateTime? @map("last_notice_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  lines       PlatformInvoiceLine[]
+  settlements PlatformSettlement[]
+
+  @@index([businessId, status])
+  @@index([status, dueAt])
+  @@map("platform_invoices")
+}
+
+model PlatformInvoiceLine {
+  id        String          @id @default(cuid())
+  invoiceId String          @map("invoice_id")
+  invoice   PlatformInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  kind        PlatformInvoiceLineKind
+  description String
+  quantity    Int                     @default(1)
+  unitCents   Int                     @map("unit_cents")
+  amountCents Int                     @map("amount_cents")
+  sortOrder   Int                     @default(0) @map("sort_order")
+
+  @@index([invoiceId])
+  @@map("platform_invoice_lines")
+}
+
+/// Money actually received. Append-only ledger: one row per receipt, never
+/// edited. The same discipline as DriverLedgerEntry — a balance is a SUM, not
+/// a field.
+model PlatformSettlement {
+  id         String          @id @default(cuid())
+  invoiceId  String          @map("invoice_id")
+  invoice    PlatformInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  businessId String          @map("business_id") @db.Uuid
+  business   Business        @relation(fields: [businessId], references: [id], onDelete: Restrict)
+
+  /// skhp_<32hex> — the platform-billing namespace, never skh_ (merchant).
+  reference   String                   @unique
+  amountCents Int                      @map("amount_cents")
+  method      PlatformSettlementMethod
+  /// The merchant's own EFT reference / proof, as given to us.
+  payerReference String?               @map("payer_reference")
+  receivedAt  DateTime                 @map("received_at")
+  /// The PlatformAdmin who recorded it. Null only for a future automated charge.
+  recordedByAdminId String?            @map("recorded_by_admin_id")
+  note        String?
+  voidedAt    DateTime?                @map("voided_at")
+  voidReason  String?                  @map("void_reason")
+  createdAt   DateTime                 @default(now()) @map("created_at")
+
+  @@index([businessId])
+  @@index([invoiceId])
+  @@map("platform_settlements")
+}
+
+/// A managed service a merchant has bought — people doing the work for them,
+/// sold by enquiry and recorded by an admin. NOT a SaaS feature, and never a
+/// commission on the merchant's own sales.
+model BusinessAddon {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
+
+  /// Matches MANAGED_SERVICES in src/modules/billing/managed-services.ts.
+  serviceSlug  String @map("service_slug")
+  setupCents   Int    @default(0) @map("setup_cents")
+  monthlyCents Int    @map("monthly_cents")
+  /// Whether the one-off setup fee has already been invoiced.
+  setupInvoiced Boolean @default(false) @map("setup_invoiced")
+
+  status    BusinessAddonStatus @default(ACTIVE)
+  startedAt DateTime            @default(now()) @map("started_at")
+  endedAt   DateTime?           @map("ended_at")
+  note      String?
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+
+  @@index([businessId, status])
+  @@map("business_addons")
+}
+
+/// Per-year invoice number counter. One row per calendar year; the sequence
+/// resets each year. Taken under a row lock inside the issuing transaction so
+/// two concurrent issues can never collide or reuse a number.
+model InvoiceNumberSequence {
+  year       Int      @id
+  lastNumber Int      @default(0) @map("last_number")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("invoice_number_sequences")
+}
+
+// ---- Tab 7 ----
+// Storefront workflows beyond order and book: a quote request with photos,
+// an enquiry with a date and headcount, a pickup request, a callback.
+// Each lands here as a lead the business works from Dashboard > Enquiries.
+// The customer is linked to their pairwise membership (never the global
+// customer id); contact details are the ones typed for THIS request.
+// =============================================================================
+
+enum StorefrontLeadKind {
+  QUOTE_REQUEST
+  EVENT_ENQUIRY
+  PICKUP_REQUEST
+  CALLBACK_REQUEST
+}
+
+enum StorefrontLeadStatus {
+  NEW
+  IN_PROGRESS
+  QUOTED
+  WON
+  CLOSED
+}
+
+model StorefrontLead {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  kind   StorefrontLeadKind
+  status StorefrontLeadStatus @default(NEW)
+
+  /// The pairwise membership registered from the phone number, when registration succeeded.
+  membershipId String? @map("membership_id") @db.Uuid
+
+  customerName String  @map("customer_name")
+  phone        String
+  email        String?
+  message      String?
+  /// The workflow's own fields (date, headcount, address, time window, vehicle), validated by storefront-workflows/workflows.ts.
+  details      Json
+  /// Up to three customer photos (Vercel Blob URLs), quote requests only.
+  photos       String[]
+  /// The service the customer picked, if any - by name, so a renamed or deleted service never breaks the lead.
+  serviceName  String? @map("service_name")
+  /// Which storefront page the form was on (analytics, Tab 7 step 6).
+  pageSlug     String  @default("") @map("page_slug")
+
+  ownerNotes String?   @map("owner_notes")
+  handledAt  DateTime? @map("handled_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([businessId, status, createdAt])
+  @@index([businessId, createdAt])
+  @@map("storefront_leads")
+}
+
+/// The record of a data-subject request handled by a platform admin
+/// (data-subject.service.ts): an export produced or an erasure carried out,
+/// for a business or for one customer at a business. Append-only evidence
+/// for POPIA: who asked us to act, who acted, when, why. Never holds the
+/// exported data itself and never the global customer id — a customer is
+/// identified by the pairwise membership public id (and a hash of the phone
+/// the request was keyed by).
+model DataSubjectRequest {
+  id         String   @id @default(cuid())
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// EXPORT | ERASE
+  kind    String
+  /// BUSINESS | CUSTOMER
+  subject String
+  /// memberships.public_id for a CUSTOMER request; null for a BUSINESS one.
+  membershipPublicId String? @map("membership_public_id") @db.Uuid
+  /// SHA-256 of the normalised phone the request was keyed by (customer requests).
+  phoneHash String? @map("phone_hash")
+
+  /// platform_admin | staff
+  actorType String  @map("actor_type")
+  actorId   String  @map("actor_id")
+  reason    String?
+  /// What the erasure touched (counts only), for the record.
+  summary   Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([businessId, createdAt])
+  @@index([membershipPublicId])
+  @@map("data_subject_requests")
+}
+
+// =============================================================================
+// ---- Tab 4 ---- (continued: notify-sms workstream)
+//
+// Appended at the END of the file rather than inside the Tab 4 block above, on
+// purpose. A tab-block boundary is exactly where git mis-merges this schema:
+// during the platform-billing rebase it matched two models' identical
+// `createdAt`/`updatedAt` declarations as shared context and spliced one
+// model's body onto another's, and `prisma validate` accepted the result. An
+// end-of-file append cannot do that. Ownership is the marker, not the position.
+// =============================================================================
+
+enum MessageLogStatus {
+  /// Refused before sending, by the daily cap. Nothing left the building and
+  /// nothing was charged — recorded so an owner can be told why.
+  CAPPED
+  /// The provider refused it, or we could not reach the provider.
+  REJECTED
+  /// The provider took it. This is the only status that means "sent".
+  ACCEPTED
+  /// A delivery report said it reached the handset.
+  DELIVERED
+  /// A delivery report said it did not.
+  UNDELIVERED
+}
+
+/// One row per attempt to send a phone message (src/lib/messaging).
+///
+/// Append-only: rows are inserted when a send is attempted and afterwards only
+/// ever updated by a delivery report, which may set deliveredAt/reportedAt and
+/// move ACCEPTED to DELIVERED or UNDELIVERED. Nothing deletes or rewrites them
+/// — this is the record of money spent on a merchant's behalf.
+///
+/// What is deliberately NOT here: the recipient's number and the message body.
+/// src/lib/messaging/provider.ts promises never to log either on any path, and
+/// a database table is still a log. `toMasked` keeps the last three digits so a
+/// support query can recognise a number, and `bodyChars` carries what cost
+/// actually depends on. Reconstructing the message is impossible by design.
+model MessageLog {
+  id String @id @default(cuid())
+
+  /// The business whose customer this went to, when there is one. Null for a
+  /// customer sign-in code: those are platform identity messages and are
+  /// deliberately not attributed to a shop (a phone is a separate customer row
+  /// at every business, and sign-in must not pick one — see CustomerLoginCode).
+  /// SetNull rather than Restrict: closing a business must neither destroy the
+  /// record of what was spent nor be blocked by it.
+  businessId String?   @map("business_id") @db.Uuid
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  /// MessageKind from the seam: customer_login_code, customer_order_status, …
+  kind     String
+  /// Which adapter sent it, so a vendor switch stays legible in the history.
+  provider String
+
+  /// `+27 ** *** *123` — enough to recognise, never enough to dial.
+  toMasked String           @map("to_masked")
+  status   MessageLogStatus
+  /// Characters sent. Cost depends on length; the text itself is not kept.
+  bodyChars Int             @map("body_chars")
+
+  /// The provider's id for this message, and the key a delivery report arrives
+  /// with. Unique so a replayed report cannot be applied to two rows; null on
+  /// CAPPED and on most REJECTED rows, and Postgres allows many nulls.
+  providerMessageId String? @unique @map("provider_message_id")
+  /// Why it failed or was capped — a stable name, never provider prose.
+  errorName         String? @map("error_name")
+
+  /// What the provider says it cost, in ITS OWN credits, not rands. BulkSMS
+  /// reports `creditCost` (e.g. 0.3) and the API does not expose what a credit
+  /// was bought for, so converting to ZAR here would be inventing a number.
+  /// Deliberately not integer cents: this is not currency.
+  costCredits Decimal? @map("cost_credits") @db.Decimal(10, 4)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  /// When a delivery report last told us something.
+  reportedAt  DateTime? @map("reported_at")
+  deliveredAt DateTime? @map("delivered_at")
+
+  /// The daily-cap count is `where businessId = ? and createdAt >= <SA midnight>`.
+  @@index([businessId, createdAt])
+  @@index([status, createdAt])
+  @@map("message_logs")
+}
+
+// ---- Tab 7 (web push, feature/notify-webpush) ----
+// A browser the customer said "yes, tell me about my orders on this phone" on.
+// Tied to the pairwise membership at ONE business (never customers.id), so a
+// shop can only ever reach a customer about its own orders. The endpoint is
+// the push service's unguessable URL for that browser; p256dh/auth are the
+// browser's keys for encrypting each payload. Rows go when the customer
+// switches off, when the push service says the browser is gone (404/410),
+// or with the membership.
+// =============================================================================
+
+model CustomerPushSubscription {
+  id           String     @id @default(cuid())
+  membershipId String     @map("membership_id") @db.Uuid
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  endpoint String
+  p256dh   String
+  auth     String
+  /// Browser family only (e.g. "Android Chrome"), for the account page - never the full user agent.
+  deviceLabel String @default("") @map("device_label")
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastSentAt DateTime? @map("last_sent_at")
+
+  @@unique([membershipId, endpoint])
+  @@index([endpoint])
+  @@map("customer_push_subscriptions")
+}

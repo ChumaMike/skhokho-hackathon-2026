@@ -1,0 +1,162 @@
+# Skhokho Privacy Notice
+
+**DRAFT FOR ATTORNEY REVIEW — not yet in force.**
+
+**Version:** v0.1-draft-2026-10-21 · **Status:** DRAFT FOR ATTORNEY REVIEW · **Effective from:** not yet in force · **Law:** Protection of Personal Information Act 4 of 2013 (POPIA), section 18 notification
+
+> **[ATTORNEY: …]** marks a point counsel must decide or confirm. **[FILL IN: …]** marks a fact Skhokho Labs must supply before publication. Neither marker may appear in the published version. Every statement about what the software does was checked against the code on 2026-10-21; `docs/legal-dependencies.md` is the engineering record behind it.
+
+---
+
+## 1. Who is responsible for your information
+
+Skhokho is run by **Skhokho Laboratory ("Skhokho Labs")**, [FILL IN: legal form, registration number, registered address].
+
+There are two kinds of responsible party on Skhokho, and this notice tells you which is which:
+
+- **Skhokho Labs is the responsible party** for the information the platform needs to run: your sign-in details if you are a business owner, staff member or driver; the platform's own records (security logs, audit trail, rate limiting); Skhokholetha driver and delivery records; and the identity record that lets you use one mobile number as a rewards card at different businesses without those businesses seeing each other's records.
+- **Each business is the responsible party** for its own customers — the orders you place with it, your bookings, your rewards card at that business, and any marketing consent you give that business. **Skhokho Labs processes that information as the business's operator**, on the business's instructions, under the Merchant Terms.
+
+**[ATTORNEY: confirm this allocation of responsible-party and operator roles, including for the shared customer identity record (section 4.1), which exists for the customer's benefit across businesses and is controlled by Skhokho Labs alone.]**
+
+**Information Officer.** [FILL IN: full name], Information Officer, Skhokho Laboratory. Email [FILL IN: privacy email]. Postal/physical address [FILL IN]. Registered with the Information Regulator on [FILL IN: date] **[ATTORNEY: registration must be done on the Regulator's portal before this notice is published; deputies if any]**.
+
+## 2. The short version
+
+- We keep your **mobile number** so a business can run your rewards card and reach you about your own order or booking. Nothing else is required.
+- A business **only sees its own relationship with you**. We never show one business what you do at another.
+- We **do not sell** personal information and we **do not send marketing** unless you separately opt in; you can stop at any time, free.
+- Card payments go to the **business's own PayFast account**; we never see card details.
+- Our database and some service providers are **outside South Africa** (section 6). Your rights are in section 9.
+
+## 3. Who this notice covers
+
+| You are… | Read sections |
+|---|---|
+| A customer: you order, book, join a rewards card, or visit a storefront | 4.1, 4.2, 5–10 |
+| A business owner or staff member on Skhokho | 4.3, 5–10 and the Merchant Terms |
+| A Skhokholetha driver | the **Driver Privacy Notice** (separate) and sections 5–10 here |
+| A visitor to the Skhokho marketing site who sends an enquiry | 4.4, 5–10 |
+
+## 4. What we collect and why
+
+### 4.1 Customers — your rewards card and the identity record
+
+| What | Why | Basis |
+|---|---|---|
+| Mobile number; a display name if you give one; language preference | To create and run your rewards card with a business; to let the business reach you about your own orders and bookings; to recognise you next time | Performance of your relationship with that business; our legitimate interest in running one rewards card per number **[ATTORNEY: confirm POPIA s11 basis per purpose]** |
+| A card code and short code per business | So the business can identify your card without seeing the platform-wide identity record | Same |
+| Visits, stamps and rewards at a business | To run that business's loyalty rules | Same |
+| Consent records (what you agreed to, when, from which channel, with what wording version) | To prove consent and honour withdrawals | Legal obligation (POPIA s69 for marketing) |
+
+The identity record (one record per mobile number, across businesses) is held by Skhokho Labs. **Businesses never see its identifier**; they see only the card code for their own relationship with you. We will not link your activity across businesses unless you give a separate consent for that **and** the Information Regulator has granted prior authorisation under POPIA section 57. That feature is switched off until then.
+
+### 4.2 Customers — orders, bookings and delivery
+
+| What | Why | Kept |
+|---|---|---|
+| Your order: items, options, prices, fulfilment method, notes; your mobile number; your name if given | To let the business prepare and hand over the order and to keep a record of the sale | See the Retention Schedule |
+| An email address typed at checkout or booking | Only to send the confirmation for **that** order or booking and, for a delivery, your delivery page link. It is kept on the order, never on your rewards card | With the order |
+| Delivery address, delivery instructions, contact number for the delivery; the map position of the address | To deliver, to price delivery by distance or area, and to show the driver where to go | With the order |
+| Payment attempt records (reference, amount, status, PayFast's payment id) — never card numbers | To match a card payment to an order and to prove what was paid | Financial record |
+| Your drop-off code and delivery page (Skhokholetha) | So only you can confirm receipt. The code is never stored in plain text and never shown to the business | Link expires 24 hours after the delivery ends |
+| Which Terms version you accepted at checkout or booking, and when | To record your acceptance | With the order or booking |
+| Reviews and ratings you leave | To show on the storefront under your first name or card code | Until removed |
+
+**Order and booking emails** are sent through Resend (section 6). **Delivery addresses** are converted to map positions by Google Maps (section 6) only when a business uses distance pricing or Skhokholetha.
+
+### 4.3 Business owners and staff
+
+| What | Why |
+|---|---|
+| Email address, password (stored as a hash), name, phone, role, job title, avatar | To sign you in and run the business's console; to send invitations and password resets |
+| Business details you publish (name, legal name, registration number, address, phone, WhatsApp, email, returns and complaints text) | Shown on the storefront as the law requires of an online seller (ECTA s43) |
+| Logo and product photos | Stored on Vercel Blob with public web addresses, because they are shown on your public storefront |
+| PayFast merchant ID, key and passphrase | Encrypted at rest; used only to send your customers to your own PayFast account and to verify its payment notices |
+| Sign-in sessions, last sign-in time, audit trail of important actions (with the IP address) | Security and accountability |
+| Messages you type to the Business Buddy assistant and the actions it proposes | To answer you and to let you approve or reject an action. See section 7 on AI |
+| Onboarding interview answers and storefront design choices | To build your storefront |
+
+### 4.4 Visitors and enquiries
+
+The marketing site's enquiry form stores the name, phone, email, business name and message you send so we can reply. Storefront analytics are **counters only** (page, section, device type, day) with no visitor identifier, kept for 400 days. Rate-limiting records (an IP-derived key and a count) are kept for two days to stop abuse.
+
+### 4.5 Cookies
+
+We set only the cookies the service needs: a sign-in cookie for owners and staff (`skhokho-staff-token`, 7 days), for platform users (`skhokho-user-token`, 30 days), for drivers (`skhokho-driver-token`, 7 days), for platform administrators (`skhokho-admin-token`, 12 hours, and a short MFA step cookie), and a display-theme preference. There are no advertising or cross-site tracking cookies. **[ATTORNEY: whether a cookie banner is required for strictly necessary cookies only.]**
+
+## 5. Who we share with
+
+- **The business you deal with** sees what it needs for your order, booking or card: your mobile number, name if given, card code, order details, delivery address. It does not see your email typed at checkout, your drop-off code, or anything about you at other businesses.
+- **A Skhokholetha driver**, once assigned to your delivery, sees your name, the delivery address, your instructions and the delivery contact number. The driver's app shows the delivery, not your order history.
+- **Our operators (service providers)** in section 6.
+- **Authorities**, where the law requires it, and **the Information Regulator** on request.
+
+We do not sell personal information and do not share it with advertisers.
+
+## 6. Operators and transfers outside South Africa (POPIA section 72)
+
+| Operator | What it receives | Where | Why we use it |
+|---|---|---|---|
+| Neon (database hosting) | All platform data, including customer names and mobile numbers | **United States (AWS us-east-1)** | Managed Postgres database |
+| Vercel (hosting, serverless functions, logs, Blob file storage) | Every web request; server logs; uploaded logos and product photos | United States / global network **[FILL IN: function region configured for the production project]** | Runs the platform |
+| Resend (email) | Recipient email address and the message content (order and booking confirmations, invitations, password resets) | Outside South Africa | Sends email |
+| Google Maps Platform (geocoding, maps) | Delivery addresses and shop addresses (server-side); the customer's and driver's browser loads map tiles when a tracking map is shown | Outside South Africa | Distance pricing, drop-off pins, tracking map |
+| PayFast | Name, email and mobile number typed at a card checkout, passed to the **business's own** PayFast account | South Africa | Card payments (the business's own agreement with PayFast) |
+| Anthropic (AI models) | **Nothing by default.** If Skhokho Labs switches external AI on, the business's own details and pseudonymised labels only — never customer names, numbers, addresses, payments or delivery codes | United States | AI assistance for business owners (section 7) |
+
+Our basis for sending personal information to these operators outside South Africa: each operator is bound by a written agreement that requires it to protect the information to a standard substantially similar to POPIA, and the transfer is necessary to provide the service you asked for. **[ATTORNEY: confirm the section 72(1) ground relied on for each operator — (a) binding agreement / adequate law, or (b) consent, or (c) necessity for performance of the contract — and record each operator agreement in docs/legal-dependencies.md. Decide whether consent is needed at sign-up.]**
+
+## 7. AI features
+
+Business owners can use an assistant ("Business Buddy") and storefront design and marketing tools. Today every external model call is switched off in production. When it is switched on:
+
+- the assistant sends the business's own name, counts and totals, with customer names replaced by labels such as "Customer 1" before anything leaves our servers, and restores them locally;
+- marketing and storefront generation sends the business's own description, catalogue and brand details, and aggregated sales figures — never customer records;
+- every call is logged with the business, feature, token counts and outcome, never the prompt or the answer.
+
+No decision about you is made by automated means alone. **[ATTORNEY: confirm no POPIA s71 automated-decision-making exposure.]**
+
+## 8. How long we keep information
+
+The **Retention Schedule** (docs/legal/retention-schedule.md) lists every table, how long it is kept and why. In short: your rewards card stays while you use it or until you ask to leave; orders and bookings stay as the business's and our financial records; security logs are short-lived; delivery links expire after 24 hours; analytics counters are kept for 400 days and rate-limit records for two days.
+
+## 9. Your rights
+
+Under POPIA you may:
+
+- **ask what we hold about you** (section 23) — we will tell you whether we hold personal information about you and give you a copy;
+- **ask us to correct or delete it** (section 24) — we correct errors; we delete or de-identify what we no longer need. Some records must be kept by law or to prove a transaction (orders with payments, domain registrations); for those we de-identify rather than delete and tell you so;
+- **object** to processing based on our legitimate interests (section 11(3));
+- **stop marketing** at any time, free of charge (section 69) — reply STOP, or tell the business or us;
+- **withdraw consent** where processing is based on consent — this does not affect what was done before;
+- **complain to the Information Regulator** (complaints@inforegulator.org.za **[FILL IN: confirm current contact details]**) if you believe we have not handled your information lawfully.
+
+To use these rights, contact the Information Officer (section 1) or ask the business you deal with to pass your request to us. The **Data Subject Request Process** (docs/legal/data-subject-request-process.md) explains how we verify who you are and how long we take. **[ATTORNEY: response periods and any permitted fees under PAIA/POPIA.]**
+
+## 10. Security
+
+We protect personal information with access controls, encrypted connections, encryption at rest for payment credentials and bank details, hashed passwords and tokens, an append-only audit trail for sensitive actions, role-based permissions inside each business, rate limiting, and multi-factor authentication for platform administrators. Sensitive values are stripped from logs. If a security compromise affects your personal information we will notify you and the Information Regulator as POPIA section 22 requires.
+
+## 11. Children
+
+Skhokho is for adults and businesses. We do not knowingly collect personal information from children. **[ATTORNEY: section 34–35 position and whether any age gate is required on storefronts.]**
+
+## 12. Changes to this notice
+
+Each version carries a version string and date (top of this page). We will show the current version at /privacy and tell businesses and drivers in the console when it changes.
+
+## 13. Contact
+
+Information Officer, Skhokho Laboratory ("Skhokho Labs")
+[FILL IN: name] · [FILL IN: privacy email] · [FILL IN: address]
+
+Information Regulator (South Africa): JD House, 27 Stiemens Street, Braamfontein, Johannesburg **[FILL IN: confirm address and complaint email at publication]**
+
+---
+
+### Change log
+
+| Version | Date | Change |
+|---|---|---|
+| v0.1-draft-2026-10-21 | 2026-10-21 | First full draft. Not reviewed by counsel. Information Officer not yet named or registered. |

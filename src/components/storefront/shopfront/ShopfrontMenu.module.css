@@ -1,0 +1,159 @@
+/* FOOD_MENU template — menu list. Colours come only from the --shop-* tokens. */
+
+.heading {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Category chips scroll sideways on phones instead of wrapping into a wall. */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.chip {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border: 1px solid var(--shop-border);
+  border-radius: 999px;
+  color: var(--shop-fg);
+  background: #fffdf8;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  background: var(--shop-board);
+  color: var(--shop-cream);
+}
+
+.columns {
+  display: grid;
+  gap: 8px 48px;
+}
+
+@media (min-width: 900px) {
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.group {
+  min-width: 0;
+  scroll-margin-top: 90px;
+}
+
+.groupName {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--shop-muted);
+  margin: 20px 0 4px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--shop-border);
+}
+
+.main {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--shop-border);
+}
+
+.info {
+  min-width: 0;
+}
+
+/* Long dish names wrap — never overflow a phone screen. */
+.name {
+  display: block;
+  font-weight: 700;
+  color: var(--shop-fg);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.name:hover {
+  text-decoration: underline;
+}
+
+.desc {
+  margin: 4px 0 0;
+  color: var(--shop-muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.price {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Menu rows are tapped one-handed: the shared Add control and its quantity
+   buttons get a 44px touch target here, without changing the classic cards. */
+.side button,
+.side a {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.more {
+  margin: 24px 0 0;
+}
+
+@media (max-width: 560px) {
+  .row {
+    gap: 12px;
+    padding: 14px 0;
+  }
+
+  .thumb {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+  }
+}

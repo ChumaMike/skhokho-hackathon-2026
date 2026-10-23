@@ -1,0 +1,78 @@
+.grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.photo {
+  width: 100%;
+  min-height: 320px;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--shop-radius);
+}
+
+.photoFallback {
+  min-height: 320px;
+  border-radius: var(--shop-radius);
+  background: var(--shop-primary-safe);
+  color: var(--shop-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, serif;
+  font-size: 72px;
+}
+
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(24px, 3vw, 34px);
+  margin: 0 0 14px;
+}
+
+.body {
+  color: var(--shop-muted);
+  margin: 0;
+  line-height: 1.7;
+}
+
+.highlights {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.highlights li {
+  padding: 12px 14px;
+  background: #fffdf8;
+  border: 1px solid var(--shop-border);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo,
+  .photoFallback {
+    min-height: 240px;
+  }
+}
+
+/* STACKED layout (layouts.ts): photo above the story at every width, photo kept short. */
+.grid[data-layout="STACKED"] {
+  grid-template-columns: 1fr;
+  gap: 24px;
+  max-width: 760px;
+}
+
+.grid[data-layout="STACKED"] .photo,
+.grid[data-layout="STACKED"] .photoFallback {
+  min-height: 200px;
+  max-height: 280px;
+}

@@ -1,0 +1,43 @@
+.trust {
+  background: #fffdf8;
+  border-bottom: 1px solid var(--shop-border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  padding: 22px 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px 12px;
+  border-right: 1px solid var(--shop-border);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.item:last-child {
+  border-right: 0;
+}
+
+/* TILES layout (layouts.ts): separate cards instead of one divided row. */
+.trust[data-layout="TILES"] {
+  background: transparent;
+  border-bottom: 0;
+}
+
+.trust[data-layout="TILES"] .grid {
+  gap: 10px;
+  padding: 18px 0 0;
+}
+
+.trust[data-layout="TILES"] .item {
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius-sm);
+  background: #fffdf8;
+  padding: 14px 12px;
+}

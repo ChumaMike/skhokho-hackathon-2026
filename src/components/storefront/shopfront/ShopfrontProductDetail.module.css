@@ -1,0 +1,107 @@
+.detail {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 56px;
+  align-items: start;
+}
+
+.imageWrap {
+  border-radius: var(--shop-radius);
+  overflow: hidden;
+  background: #e9dfcd;
+}
+
+.image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, serif;
+  font-size: 64px;
+  color: var(--shop-muted);
+}
+
+.meta {
+  padding-top: 10px;
+}
+
+.category {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--shop-muted);
+  font-weight: 800;
+}
+
+.name {
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 3vw, 36px);
+  margin: 6px 0 10px;
+}
+
+.price {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+
+.description {
+  color: var(--shop-muted);
+  line-height: 1.7;
+  margin: 0 0 22px;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--shop-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.stepperButton {
+  border: 0;
+  background: #fffdf8;
+  width: 40px;
+  height: 42px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.stepperButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepperQty {
+  width: 36px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.helpLine {
+  font-size: 12px;
+  color: var(--shop-muted);
+  margin-top: 22px;
+}
+
+.helpLine a {
+  color: var(--shop-primary-safe);
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .detail {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+}

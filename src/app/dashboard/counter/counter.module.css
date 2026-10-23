@@ -1,0 +1,277 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 10px;
+}
+
+.stampForm {
+  display: flex;
+  gap: 8px;
+}
+
+.stampForm .input {
+  flex: 1;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.order {
+  padding: 14px 16px;
+}
+
+.orderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.orderNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.total {
+  font-family: var(--font-display);
+  color: var(--amber);
+}
+
+.items {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 6px;
+}
+
+.status {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
+
+.empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--dust);
+}
+
+.fullOrdersLink {
+  display: inline-block;
+  font-size: var(--text-sm);
+  color: var(--dust);
+  text-decoration: underline;
+}
+
+.fullOrdersLink:hover {
+  color: var(--chalk);
+}
+
+/* ---------------------------------------------------------------------------
+ * POS — product grid (left) + running ticket (right, sticky). Products
+ * with configured options (size/extras) aren't shown here yet — they need
+ * the full configurator, out of scope for this pass; add them via the
+ * full Orders page in the meantime.
+ * ------------------------------------------------------------------------- */
+
+.pos {
+  display: block;
+  margin-bottom: 28px;
+}
+
+.posGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.posItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 64px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+  text-align: left;
+  cursor: pointer;
+}
+
+.posItem:hover,
+.posItem:active {
+  border-color: var(--amber);
+}
+
+.posItemName {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.posItemPrice {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.ticket {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+@media (min-width: 900px) {
+  .pos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .ticket {
+    position: sticky;
+    top: 20px;
+    margin-top: 0;
+  }
+}
+
+.ticketTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 10px;
+}
+
+.ticketEmpty {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.ticketList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.ticketLine {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+}
+
+.ticketLineName {
+  color: var(--chalk);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticketLinePrice {
+  font-family: var(--font-mono);
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+.qtyControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qtyControls button {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--edge);
+  background: var(--ink);
+  color: var(--chalk);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ticketTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  padding-top: 10px;
+  border-top: 1px solid var(--edge);
+  margin-bottom: 12px;
+}
+
+.paymentToggle {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.paymentToggle button {
+  flex: 1;
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: var(--ink);
+  color: var(--dust);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.paymentActive {
+  border-color: var(--amber) !important;
+  color: var(--amber) !important;
+}
+
+.ticketError {
+  color: var(--oxide);
+  font-size: var(--text-sm);
+  margin: 0 0 10px;
+}
+
+.ticketSuccess {
+  color: var(--veld);
+  font-size: var(--text-sm);
+  margin: 0 0 10px;
+}
+
+.takePaymentBtn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 10px;
+  border: none;
+  background: var(--amber);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.takePaymentBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

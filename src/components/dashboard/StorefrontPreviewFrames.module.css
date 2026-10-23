@@ -1,0 +1,66 @@
+.previews {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.previews figure {
+  margin: 0;
+  text-align: center;
+  color: var(--dust);
+  font-size: 0.85rem;
+}
+
+.previewPhone {
+  flex: 0 0 auto;
+}
+
+.framePhone {
+  width: 390px;
+  max-width: calc(100vw - 32px);
+  height: 720px;
+  border: 1px solid var(--edge);
+  border-radius: 24px;
+  background: #fff;
+}
+
+.previewDesktop {
+  flex: 0 1 576px;
+  min-width: 0;
+}
+
+/* 1280x800 desktop frame shown at 45% — a fixed viewport so the scale is exact. */
+.desktopViewport {
+  position: relative;
+  width: 576px;
+  height: 360px;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.frameDesktop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 800px;
+  border: 0;
+  transform-origin: top left;
+  transform: scale(0.45);
+}
+
+.open {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .desktopViewport {
+    display: none;
+  }
+}

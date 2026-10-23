@@ -1,0 +1,24 @@
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 3.5vw, 38px);
+  margin: 0;
+}
+
+.viewAll {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--shop-primary-safe);
+  white-space: nowrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

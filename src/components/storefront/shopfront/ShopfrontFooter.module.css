@@ -1,0 +1,146 @@
+.ctaBand {
+  background: var(--shop-primary-safe);
+  padding: 48px 0;
+}
+
+.ctaInner {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: min(1240px, calc(100% - 40px));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.ctaEyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: var(--shop-on-primary);
+  opacity: 0.8;
+}
+
+.ctaHeading {
+  font-family: Georgia, serif;
+  font-size: 28px;
+  margin: 0;
+  color: var(--shop-on-primary);
+  max-width: 480px;
+}
+
+.ctaButton {
+  background: var(--shop-board);
+  color: var(--shop-cream);
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-weight: 800;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.footer {
+  background: var(--shop-board);
+  color: #cfc2aa;
+  padding: 56px 0 24px;
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: min(1240px, calc(100% - 40px));
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 30px;
+}
+
+.brand {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  color: var(--shop-cream);
+  margin: 0 0 8px;
+}
+
+.tagline {
+  font-size: 13px;
+  max-width: 320px;
+  margin: 0;
+}
+
+.grid h3 {
+  font-size: 15px;
+  color: var(--shop-cream);
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+.grid a,
+.grid span {
+  display: block;
+  font-size: 13px;
+  margin: 7px 0;
+  color: #bfb29c;
+}
+
+.bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 40px;
+  padding-top: 18px;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ctaInner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* A fourth column when the owner has footer pages (policies and the like). */
+.grid[data-columns="4"] {
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+}
+
+.grid nav a {
+  display: block;
+}
+
+/* Slot for the legal / business-details block (owned by Tab 2). */
+.legal {
+  margin-top: 32px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #bfb29c;
+}
+
+@media (max-width: 720px) {
+  .grid[data-columns="4"] {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid[data-columns="4"] {
+    grid-template-columns: 1fr;
+  }
+}

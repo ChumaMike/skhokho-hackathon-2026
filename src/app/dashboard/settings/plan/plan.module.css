@@ -1,0 +1,269 @@
+/*
+ * Dashboard > Settings > Your plan.
+ *
+ * Tokens only — no literal colours, so the console's light palette and the
+ * dark theme both work (see globals.css, and the note in payments.module.css
+ * about a var() being substituted where it is declared, not where inherited).
+ * Mobile-first: most owners are on an Android phone.
+ */
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.sub {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 20px;
+}
+
+.card {
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 10px;
+}
+
+.eyebrow {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 2px;
+}
+
+.note {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+/* Attention without alarm: an owner in grace is still trading. */
+.warn {
+  background: rgba(232, 160, 32, 0.1);
+  border: 1px solid var(--amber);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: var(--text-sm);
+  color: var(--chalk);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+/* --- current plan --- */
+
+.planHead {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.planName {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 0 0 4px;
+}
+
+.until {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.featureList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.featureList li {
+  font-size: var(--text-sm);
+  color: var(--chalk);
+  background: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* --- usage --- */
+
+.usageList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.usageRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+}
+
+/* Over the limit is a state to explain, not an error to shout about —
+   nothing was removed and the shop is still trading. */
+.usageRow[data-over] {
+  border-color: var(--amber);
+}
+
+.usageLabel {
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.usageValue {
+  font-size: var(--text-sm);
+  color: var(--dust);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- other plans --- */
+
+.planGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.planOption {
+  background: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.planOptionName {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0;
+}
+
+.planPrice {
+  color: var(--amber);
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 4px;
+}
+
+/* --- invoices --- */
+
+.invoiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.invoiceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+}
+
+.invoiceNumber {
+  display: block;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.invoiceMeta {
+  display: block;
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin-top: 2px;
+}
+
+.invoiceRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.invoiceTotal {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk);
+}
+
+.invoiceStatus {
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.invoiceStatus[data-status="PAID"] {
+  color: var(--veld);
+}
+
+.invoiceStatus[data-status="OPEN"],
+.invoiceStatus[data-status="UNCOLLECTIBLE"] {
+  color: var(--amber);
+}
+
+/* --- forms --- */
+
+.inlineForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.inlineForm .input {
+  width: 100%;
+}
+
+.issuer {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  margin: 4px 0 24px;
+}
+
+@media (min-width: 640px) {
+  .planHead {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .planGrid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .inlineForm .input {
+    max-width: 360px;
+  }
+}

@@ -1,0 +1,158 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order {
+  padding: 18px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.orderNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.status {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  font-size: var(--text-base);
+  color: var(--chalk);
+}
+
+.items li {
+  padding: 4px 0;
+}
+
+/* Food Menu Domain Foundation §15 — selected customer choices, indented
+ * under the item they belong to ("Large", "No tomato"). */
+.itemOptions {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0 16px;
+  font-size: var(--text-sm);
+  color: var(--dust);
+}
+
+.actionBtn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid var(--amber);
+  background: var(--amber);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--dust);
+}
+
+/* ---------------------------------------------------------------------------
+ * Ticket board — two columns (New/Preparing), matching the two statuses
+ * listKitchenOrders actually scopes to. A "Ready" column isn't added here:
+ * once an order is marked ready it leaves the kitchen's purview by design
+ * (handoff/collection is Counter's job, not a second kitchen action) — see
+ * order.service.ts's listKitchenOrders. Self-contained responsive grid
+ * (doesn't lean on the console's wide-column rule) since this page also
+ * renders at phone width for a dedicated Kitchen staff login, not just the
+ * owner's wide sidebar view.
+ * ------------------------------------------------------------------------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
+
+.boardColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 80px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--edge);
+  background: color-mix(in srgb, var(--board) 60%, transparent);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 6px;
+}
+
+.columnTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
+
+.columnCount {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.columnEmpty {
+  text-align: center;
+  padding: 20px 8px;
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.ticketPreparing {
+  border-color: var(--amber);
+}
+
+.ticketAge {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--dust);
+}
+
+.ticketAgeOld {
+  color: var(--oxide);
+  font-weight: 700;
+}

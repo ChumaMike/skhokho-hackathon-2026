@@ -1,0 +1,32 @@
+.heading {
+  font-family: Georgia, serif;
+  font-size: clamp(24px, 3vw, 34px);
+  margin: 0 0 24px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.item {
+  padding: 16px;
+  background: #fffdf8;
+  border: 1px solid var(--shop-border);
+  border-radius: 14px;
+}
+
+.item small {
+  display: block;
+  color: var(--shop-muted);
+  margin-bottom: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.waLink {
+  color: var(--shop-primary-safe);
+  font-weight: 800;
+}

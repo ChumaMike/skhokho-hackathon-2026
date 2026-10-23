@@ -1,0 +1,98 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 10, 5, 0.72);
+  z-index: 40;
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 32px);
+  max-width: 460px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 24px;
+  z-index: 50;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 16px;
+  padding-right: 32px;
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--dust);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .backdrop {
+    transition: opacity 150ms ease;
+  }
+  .backdrop[data-starting-style],
+  .backdrop[data-ending-style] {
+    opacity: 0;
+  }
+
+  .popup {
+    transition:
+      opacity 150ms ease,
+      transform 150ms ease;
+  }
+  .popup[data-starting-style],
+  .popup[data-ending-style] {
+    opacity: 0;
+    transform: translate(-50%, -46%);
+  }
+}
+
+/*
+ * Base UI portals the dialog to <body>, which puts it OUTSIDE the console's
+ * `.shell` - so globals.css's warm "chalk workspace" re-pin never reached
+ * it, and every one of these dialogs opened in the dark palette on top of a
+ * light console page. All four call sites (catalogue, catalogue options,
+ * domains, staff) are console pages, so the fix is to carry the same light
+ * tokens to the portalled popup, matched on `body` since that IS an
+ * ancestor of the portal.
+ *
+ * `background` and `color` are re-declared alongside the tokens for the
+ * usual reason (see globals.css `.shell`): a var() resolves where it is
+ * declared, so re-pinning alone would leave the popup's inherited text on
+ * the old palette's near-white.
+ */
+/* `:global()` is load-bearing: without it CSS Modules hashes the hook into
+   `.Modal_console-sidebar-anchor__xxx`, which matches no element in the
+   document, so this whole rule silently does nothing. `.console-sidebar-anchor`
+   is a plain global class set by BusinessConsoleNav. */
+body:has(:global(.console-sidebar-anchor)) .popup {
+  --ink: #fbf6ec;
+  --board: #fffdf8;
+  --edge: #e3d4b4;
+  --amber: #a8650c;
+  --veld: #3f6b34;
+  --oxide: #9a3b25;
+  --chalk: #241b0f;
+  --dust: #6e5d42;
+  background: var(--board);
+  color: var(--chalk);
+}

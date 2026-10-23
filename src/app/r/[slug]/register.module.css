@@ -1,0 +1,104 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+  margin: 0 0 6px;
+}
+
+.lede {
+  color: var(--dust);
+  margin: 0 0 24px;
+}
+
+/* Consent is per purpose and per channel — each choice is its own row so a
+   customer can see exactly what they are agreeing to, one thing at a time. */
+.consent {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.consent:focus-within {
+  border-color: var(--amber);
+}
+
+.consentBox {
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  accent-color: var(--amber);
+}
+
+.consentTitle {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.consentNote {
+  display: block;
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin-top: 2px;
+}
+
+.privacy {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+/* Success — the loyalty code is the whole point of this screen. It gets read
+   aloud across a counter, so it is set large, in mono, with wide tracking. */
+.done {
+  background: var(--board);
+  border: 1px solid var(--veld);
+  border-radius: var(--radius-card);
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.doneTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--veld);
+  margin: 0 0 4px;
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+  margin: 16px 0 12px;
+  word-break: break-all;
+}
+
+.doneNote {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.crossShop {
+  color: var(--dust);
+  font-size: var(--text-xs);
+  border-top: 1px solid var(--edge);
+  margin-top: 20px;
+  padding-top: 16px;
+}
+
+.empty {
+  text-align: center;
+  padding-top: 64px;
+  color: var(--dust);
+}

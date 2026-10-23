@@ -1,0 +1,147 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink);
+}
+
+.imagePanel {
+  /* --chalk/--ink/--amber flip with the viewer's OS/app theme (globals.css)
+     — correct for the form panel (a flat surface that should follow
+     theme), wrong here: this is a fixed dark photo, and in the app's light
+     theme --chalk resolves to near-black, making the overlay text
+     (brandMark, imageQuote) nearly invisible against the image. Pinned as
+     literal values, same technique the marketing pages use for their own
+     fixed-dark sections (connected-shopfront.module.css's .page). */
+  --chalk: #f5efe6;
+  --ink: #0e0a05;
+  --amber: #e8a020;
+  position: relative;
+  display: none; /* shown from 860px up — see media query. Below that, the
+    photo is a nice-to-have, not worth the scroll it costs before the form. */
+  overflow: hidden;
+  background: var(--board);
+}
+
+.imageScrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(14, 10, 5, 0.85), transparent 45%),
+    linear-gradient(180deg, rgba(14, 10, 5, 0.35), transparent 30%);
+}
+
+.brandMark {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--chalk);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 19px;
+  z-index: 2;
+}
+
+.brandMarkCompact {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--chalk);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 19px;
+  margin-bottom: 36px;
+}
+
+.sunmark {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: var(--amber);
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.imageQuote {
+  position: absolute;
+  z-index: 2;
+  left: 32px;
+  right: 32px;
+  bottom: 32px;
+  margin: 0;
+  color: var(--chalk);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.2vw, 26px);
+  line-height: 1.15;
+  max-width: 420px;
+}
+
+.formPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+}
+
+.formPanelInner {
+  width: 100%;
+  max-width: 400px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  margin: 0 0 8px;
+  color: var(--chalk);
+}
+
+.subtitle {
+  color: var(--dust);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.footer {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer :global(a) {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+@media (min-width: 860px) {
+  .shell {
+    flex-direction: row;
+  }
+
+  .imagePanel {
+    display: block;
+    flex: 0 0 44%;
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+
+  .brandMarkCompact {
+    display: none;
+  }
+
+  .formPanel {
+    flex: 1 1 56%;
+    padding: 64px 48px;
+  }
+}

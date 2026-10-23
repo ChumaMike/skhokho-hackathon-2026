@@ -1,0 +1,194 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 4px 0 6px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 10px;
+}
+
+.emptyHint {
+  color: var(--dust);
+  font-size: var(--text-sm);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  padding: 14px 16px;
+}
+
+.itemProblem {
+  border-color: var(--oxide);
+}
+
+.itemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.orderNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.driverName {
+  font-size: var(--text-sm);
+  color: var(--dust);
+}
+
+.address {
+  font-size: var(--text-sm);
+  color: var(--chalk);
+  margin: 0 0 10px;
+}
+
+.failureReason {
+  font-size: var(--text-sm);
+  color: var(--oxide);
+  margin: 0;
+}
+
+.assignForm {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.assignForm select {
+  flex: 1 1 160px;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--dust);
+}
+
+.reasonsHint {
+  font-size: var(--text-xs);
+  color: var(--dust);
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Stat tiles + queue/driver split. No route/map panel here — this app has
+ * no real driver GPS coordinates or geocoded addresses to show yet, and a
+ * decorative placeholder map would look like a broken feature rather than
+ * an honest "not built yet."
+ * ------------------------------------------------------------------------- */
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.statTile {
+  padding: 16px;
+  text-align: center;
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--amber);
+  margin: 0 0 4px;
+}
+
+.statLabel {
+  color: var(--dust);
+  font-size: var(--text-xs);
+}
+
+.layout {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 20px;
+    align-items: start;
+  }
+}
+
+.driverPanel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 1024px) {
+  .driverPanel {
+    position: sticky;
+    top: 20px;
+  }
+}
+
+.driverPanelTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 4px;
+}
+
+.driverRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--edge);
+}
+
+.driverRow:first-of-type {
+  border-top: none;
+}
+
+.driverRowName {
+  font-size: var(--text-sm);
+  color: var(--chalk);
+}
+
+.driverStatus {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--edge);
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+.driverStatusBusy {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+.driverStatusAvailable {
+  color: var(--veld);
+  border-color: var(--veld);
+}

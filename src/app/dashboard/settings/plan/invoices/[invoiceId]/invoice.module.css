@@ -1,0 +1,224 @@
+/*
+ * A printable invoice.
+ *
+ * Deliberately light-on-white rather than the console's dark palette: this is
+ * a document an owner prints or saves as PDF for their bookkeeper, and a dark
+ * page wastes a cartridge and reads badly on paper. The literal colours here
+ * are therefore intentional — this surface is paper, not chrome, and must look
+ * the same in either theme.
+ */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #ffffff;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+.noPrint {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.noPrint a {
+  color: #8a6a10;
+}
+
+.doc {
+  border: 1px solid #e3ddd3;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.docTitle {
+  font-size: 24px;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.number {
+  font-family: var(--font-mono), monospace;
+  font-size: 14px;
+  margin: 4px 0 0;
+  color: #555048;
+}
+
+.issuer {
+  text-align: left;
+}
+
+.issuerName {
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 0 2px;
+}
+
+.issuerLine {
+  font-size: 12px;
+  color: #555048;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metaLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #857c70;
+  margin: 0 0 2px;
+}
+
+.metaValue {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.metaSmall {
+  font-size: 12px;
+  color: #555048;
+  line-height: 1.6;
+  margin: 0 0 6px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #857c70;
+  border-bottom: 1px solid #e3ddd3;
+  padding: 6px 4px;
+}
+
+.table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid #f0ece5;
+  vertical-align: top;
+}
+
+.table tfoot td {
+  border-bottom: none;
+  padding-top: 6px;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lineKind {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #857c70;
+  border: 1px solid #e3ddd3;
+  border-radius: 999px;
+  padding: 1px 6px;
+  margin-right: 6px;
+}
+
+.totalRow td {
+  font-weight: 700;
+  font-size: 16px;
+  border-top: 2px solid #1a1a1a;
+}
+
+.pay {
+  background: #faf7f2;
+  border: 1px solid #e3ddd3;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.payTitle {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.bank {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.bank dt {
+  color: #857c70;
+}
+
+.bank dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer {
+  font-size: 11px;
+  color: #857c70;
+  line-height: 1.6;
+  border-top: 1px solid #e3ddd3;
+  padding-top: 10px;
+}
+
+.footer p {
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .head {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .issuer {
+    text-align: right;
+  }
+
+  .meta {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media print {
+  .noPrint {
+    display: none;
+  }
+
+  .page {
+    padding: 0;
+  }
+
+  .doc {
+    border: none;
+    padding: 0;
+  }
+}

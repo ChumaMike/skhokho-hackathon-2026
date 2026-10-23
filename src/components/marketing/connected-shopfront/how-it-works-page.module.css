@@ -1,0 +1,317 @@
+/* /how-it-works — the interactive process rail, FAQ accordion and
+   onboarding walkthrough. This page lives on the light cream section
+   background (#f6efe3 / #241b0f text) already established by
+   .workflowSection/.lightSection in connected-shopfront.module.css — colours
+   here match that palette directly rather than the dark .page tokens, which
+   are for the page's dark sections (hero, consoleShowcase, footer). */
+
+.processRail {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1.15fr);
+  gap: 44px;
+  margin-top: 46px;
+  align-items: start;
+}
+
+.processSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.processStep {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 18px 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.processStep:hover {
+  background: rgba(36, 27, 15, 0.04);
+}
+
+.processStepActive {
+  border-color: #d9cbb5;
+  background: #fffdf8;
+}
+
+.processNum {
+  font-family: var(--font-mono);
+  color: #9a5a0c;
+  font-size: 13px;
+  padding-top: 2px;
+}
+
+.processStepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.processStepBody strong {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: #241b0f;
+}
+
+.processStepBody span {
+  color: #6f604b;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.processFrame {
+  min-height: 320px;
+  border-radius: 18px;
+  border: 1px solid #d9cbb5;
+  background: #fffdf8;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  animation: fragmentIn 200ms ease;
+}
+
+@keyframes fragmentIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fragmentChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.fragmentChip,
+.fragmentChipActive {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid #d9cbb5;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6f604b;
+}
+
+.fragmentChipActive {
+  background: #241b0f;
+  border-color: #241b0f;
+  color: #f5efe6;
+}
+
+.fragmentLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.fragmentUrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid #d9cbb5;
+  background: #f6efe3;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #241b0f;
+}
+
+.fragmentQr {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
+  border: 1px solid #d9cbb5;
+  color: #241b0f;
+}
+
+/* ConsoleMock (connected-shopfront.module.css) leaves several text nodes
+   (business name, greeting, metric values, order labels) with no explicit
+   color — they've always safely inherited --chalk from an ancestor dark
+   section everywhere else ConsoleMock is used. .workflowSection is this
+   page's light section (color: #241b0f), so without re-establishing the
+   dark colour context here, that near-black inherits straight into the
+   mockup's card and reads as washed-out text on a dark card. */
+.fragmentConsole {
+  color: var(--chalk);
+  transform: scale(0.92);
+  filter: drop-shadow(0 18px 34px rgba(36, 27, 15, 0.18));
+}
+
+.fragmentConsole :global(.consoleMock) {
+  min-width: 420px;
+}
+
+/* StampFragment's card — same dark board/edge/chalk framing StampCardDemo
+ * uses for the real "signature element" (DESIGN.md), floating in this
+ * section's light .processFrame the same way .fragmentConsole's dark
+ * ConsoleMock does. */
+.fragmentStampCard {
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 18px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.fragmentStampHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--chalk);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fragmentStampMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.fragmentStampProgress {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dust);
+  white-space: nowrap;
+}
+
+.fragmentStampCode {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--dust);
+}
+
+.fragmentStampHint {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--dust);
+}
+
+.fragmentStamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fragmentDisc {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--amber);
+  transform: translate(var(--ox, 0px), var(--oy, 0px)) rotate(var(--rotate, 0deg));
+}
+
+.fragmentDiscEmpty {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px dashed #d9cbb5;
+}
+
+/* FAQ — native <details>/<summary>, free keyboard behaviour */
+.faq {
+  margin-top: 40px;
+  border-top: 1px solid #d9cbb5;
+}
+
+.faqItem {
+  border-bottom: 1px solid #d9cbb5;
+  padding: 20px 0;
+}
+
+.faqItem summary {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: #241b0f;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faqItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.faqItem summary::after {
+  content: "+";
+  float: right;
+  font-family: var(--font-body);
+  color: #9a5a0c;
+}
+
+.faqItem[open] summary::after {
+  content: "–";
+}
+
+.faqItem p {
+  color: #6f604b;
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin: 12px 0 0;
+  max-width: 640px;
+}
+
+/* Onboarding walkthrough — real /join steps, no invented pricing */
+.onboardingSteps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 34px;
+}
+
+.onboardingStep {
+  padding: 22px;
+  border: 1px solid #d9cbb5;
+  border-radius: 14px;
+  background: #fffdf8;
+}
+
+.onboardingStep span {
+  font-family: var(--font-mono);
+  color: #9a5a0c;
+  font-size: 12px;
+}
+
+.onboardingStep h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  margin: 10px 0 6px;
+  color: #241b0f;
+}
+
+.onboardingStep p {
+  color: #6f604b;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .processRail {
+    grid-template-columns: 1fr;
+  }
+  .fragmentConsole :global(.consoleMock) {
+    min-width: 0;
+    width: 100%;
+  }
+  .fragmentConsole {
+    overflow-x: auto;
+  }
+  .onboardingSteps {
+    grid-template-columns: 1fr;
+  }
+}

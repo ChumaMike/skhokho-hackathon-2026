@@ -1,0 +1,132 @@
+.switcher {
+  margin-top: 40px;
+}
+
+.tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--dust);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  border-color: color-mix(in srgb, var(--amber) 50%, var(--edge));
+  color: var(--chalk);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.tabActive {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+}
+
+.panel {
+  animation: demoFadeIn 220ms ease;
+}
+
+@keyframes demoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mockups {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.3fr) minmax(240px, 0.85fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.mockupsSingle {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.consoleSlot > *,
+.phoneSlot > * {
+  margin: 0 auto;
+}
+
+.details {
+  margin-top: 34px;
+  padding-top: 30px;
+  border-top: 1px solid var(--edge);
+}
+
+.details > p {
+  color: var(--dust);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 0 18px;
+}
+
+.details ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.details li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--chalk);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.details li svg {
+  color: var(--veld);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .mockups {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  /* consoleMock's fixed-width nav (142px) plus its body content is wider
+     than a narrow phone's content column — without this, the ancestor
+     .page's overflow:hidden silently clips the overflow instead of
+     showing a scrollbar, hiding real content off-screen. Same fix
+     ProcessRail's .fragmentConsole already uses for the same shape on
+     /how-it-works. */
+  .consoleSlot {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .details ul {
+    grid-template-columns: 1fr;
+  }
+}

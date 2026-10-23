@@ -1,0 +1,363 @@
+.page{--ink:#0e0a05;--board:#171009;--edge:#2e2011;--amber:#e8a020;--veld:#5b8c3a;--oxide:#c8452f;--chalk:#f5efe6;--dust:#8a7b68;background:var(--ink);color:var(--chalk);min-height:100vh;overflow:hidden}.header{height:76px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 clamp(20px,5vw,72px);border-bottom:1px solid var(--edge);position:relative;z-index:20;background:color-mix(in srgb,var(--ink) 92%,transparent)}.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--font-display);font-size:21px}.sunmark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:var(--amber);font-family:var(--font-body);font-weight:900}.nav{display:flex;gap:30px}.nav a,.footer a{text-decoration:none;color:var(--dust);font-size:14px;font-weight:700}.nav a:hover,.footer a:hover{color:var(--chalk)}.headerActions{justify-self:end;display:flex;align-items:center;gap:9px}.login{text-decoration:none;font-weight:700;padding:11px 13px}.primaryButton,.primaryButtonLarge{background:var(--amber);color:var(--ink);text-decoration:none;font-weight:900;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 10px 34px color-mix(in srgb,var(--amber) 18%,transparent)}.primaryButton{padding:12px 18px}.primaryButtonLarge{padding:15px 21px}.secondaryButton{border:1px solid color-mix(in srgb,var(--chalk) 25%,var(--edge));color:var(--chalk);text-decoration:none;font-weight:800;border-radius:10px;padding:14px 18px;display:inline-flex;align-items:center}.hero{min-height:720px;padding:72px clamp(20px,5vw,72px) 74px;display:grid;grid-template-columns:minmax(0,.88fr) minmax(540px,1.12fr);gap:50px;align-items:center;position:relative;background:radial-gradient(circle at 76% 20%,rgba(232,160,32,.12),transparent 34%),linear-gradient(180deg,var(--ink),#100b06)}.hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(245,239,230,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(245,239,230,.02) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,black,transparent 86%);pointer-events:none}.heroCopy{position:relative;z-index:2}.eyebrow,.lightEyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--amber);margin:0 0 18px}.hero h1{font-size:clamp(48px,5vw,76px);line-height:.97;letter-spacing:-.045em;max-width:720px}.hero h1 span{color:var(--amber)}.heroText{font-size:18px;line-height:1.58;color:var(--dust);max-width:610px;margin:24px 0 0}.heroActions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.heroProof{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:28px;color:var(--dust);font-size:12px}.heroProof span{display:flex;gap:7px;align-items:center}.heroVisual{height:580px;position:relative}.photoPanel{position:absolute;inset:0 55px 70px 70px;border-radius:26px;overflow:hidden;border:1px solid var(--edge);background:var(--board)}.photoPanel img{object-fit:cover}.photoPanel:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,10,5,.08),rgba(14,10,5,0) 45%,rgba(14,10,5,.2)),linear-gradient(0deg,rgba(14,10,5,.72),transparent 40%)}.heroConsole{position:absolute;left:-12px;bottom:0;width:68%;filter:drop-shadow(0 24px 42px rgba(0,0,0,.45))}.heroPhone{position:absolute;right:0;bottom:10px;transform:scale(.82);transform-origin:bottom right;filter:drop-shadow(0 24px 42px rgba(0,0,0,.55));z-index:4}.stamp{position:absolute;right:0;top:20px;width:138px;height:138px;border:2px solid var(--amber);border-radius:50%;display:grid;place-items:center;text-align:center;color:var(--amber);font-family:var(--font-mono);font-size:11px;line-height:1.6;letter-spacing:.08em;transform:rotate(7deg);background:rgba(14,10,5,.78);z-index:6}.consoleMock{display:flex;background:var(--board);border:1px solid var(--edge);border-radius:14px;overflow:hidden;min-height:300px}.consoleNav{width:142px;border-right:1px solid var(--edge);padding:18px 11px;display:flex;flex-direction:column;gap:3px;flex-shrink:0}.consoleNav strong{font-family:var(--font-display);font-size:13px;margin:0 9px 12px}.consoleNav span{font-size:11px;color:var(--dust);padding:7px 9px;border-radius:7px}.consoleNavActive{background:var(--edge)!important;color:var(--chalk)!important;font-weight:800}.consoleBody{padding:18px;min-width:0;flex:1}.consoleTopline,.chartHeader{display:flex;justify-content:space-between;align-items:center}.consoleTopline>span{font-family:var(--font-display);font-size:15px}.consoleTopline small,.chartHeader small{color:var(--dust)}.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.metricGrid>div{border:1px solid var(--edge);border-radius:9px;padding:10px}.metricGrid small{display:block;color:var(--dust);font-size:9px}.metricGrid b{font-size:13px;display:block;margin-top:4px}.chartCard{border:1px solid var(--edge);border-radius:9px;padding:11px;margin-top:9px}.chartHeader{font-size:10px}.bars{height:68px;display:flex;align-items:flex-end;gap:8px;padding-top:10px}.bars span{flex:1;background:linear-gradient(var(--veld),color-mix(in srgb,var(--veld) 55%,var(--edge)));border-radius:4px 4px 1px 1px}.orderRows{margin-top:7px}.orderRows>div{display:grid;grid-template-columns:45px 1fr auto;gap:7px;border-top:1px solid var(--edge);padding:8px 1px;align-items:center;font-size:9px}.orderRows span{font-family:var(--font-mono);color:var(--dust)}.orderRows em{font-style:normal;background:var(--amber);color:var(--ink);border-radius:999px;padding:3px 6px;font-weight:800}.orderRows .ready{background:var(--veld);color:var(--chalk)}.phone{width:244px;height:478px;border:8px solid #2b2218;border-radius:35px;background:#fbf6ec;color:#241b0f;overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(245,239,230,.14)}.phoneSpeaker{position:absolute;z-index:5;top:8px;left:50%;transform:translateX(-50%);width:64px;height:15px;background:#1c1712;border-radius:0 0 10px 10px}.phoneHero{height:137px;background:linear-gradient(180deg,rgba(14,10,5,.15),rgba(14,10,5,.86)),url('/connected-shopfront/business-food.svg') center/cover;display:flex;flex-direction:column;justify-content:flex-end;padding:16px}.phoneHero small{font-family:var(--font-mono);font-size:8px;color:#f2c25b}.phoneHero strong{font-family:var(--font-display);font-size:18px;line-height:1.02;color:#fff}.phoneTabs{display:flex;gap:5px;padding:11px 10px 7px;overflow:hidden}.phoneTabs span{font-size:9px;border:1px solid #dfd3bd;border-radius:999px;padding:5px 8px;white-space:nowrap}.phoneTabs .activePill{background:#241b0f;color:#fff;border-color:#241b0f}.menuLine{display:grid;grid-template-columns:48px 1fr 26px;gap:8px;padding:9px 10px;border-top:1px solid #eadfca;align-items:center}.foodThumb{display:block;width:48px;height:48px;border-radius:9px;background:radial-gradient(circle at 50% 55%,#e8a020 0 22%,#8d3b21 23% 48%,#5b8c3a 49% 60%,#2b1d10 61%)}.foodThumbAlt{filter:hue-rotate(335deg)}.menuLine div{display:flex;flex-direction:column;gap:1px}.menuLine b{font-size:10px}.menuLine small{font-size:7px;color:#786a55}.menuLine strong{font-size:9px}.menuLine button{border:0;border-radius:7px;background:#e8a020;width:25px;height:25px;font-weight:900}.phoneCta{position:absolute;bottom:10px;left:10px;right:10px;background:#e8a020;border-radius:9px;text-align:center;padding:10px;font-size:10px;font-weight:900}.proofStrip{min-height:74px;padding:0 clamp(20px,5vw,72px);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;background:#120c07;border-block:1px solid var(--edge)}.proofStrip span{text-align:center;padding:0 16px;color:var(--dust);font-size:12px;border-right:1px solid var(--edge)}.proofStrip span:last-child{border:0}.lightSection,.workflowSection{background:#f6efe3;color:#241b0f;padding:92px clamp(20px,5vw,72px)}.sectionHeading{max-width:800px}.sectionHeading h2,.sectionHeadingDark h2,.consolePitch h2,.customerCopy h2,.ctaSection h2{font-family:var(--font-display);font-size:clamp(38px,4vw,58px);line-height:1;letter-spacing:-.035em;margin:0}.sectionHeading>p:last-child,.sectionHeadingDark>p:last-child{font-size:17px;line-height:1.5;max-width:700px;color:#6f604b}.lightEyebrow{color:#9a5a0c}.capabilityGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:46px;border-top:1px solid #d9cbb5;border-left:1px solid #d9cbb5}.capability{padding:28px;border-right:1px solid #d9cbb5;border-bottom:1px solid #d9cbb5;min-height:210px}.iconDisc{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#f0d7aa;color:#7e4707}.capability:nth-child(2n) .iconDisc{background:#dce5ce;color:#3f6b34}.capability:nth-child(3n) .iconDisc{background:#efd2c8;color:#9a3b25}.capability h3{font-family:var(--font-display);font-size:20px;margin:20px 0 8px}.capability p{color:#6f604b;line-height:1.55;margin:0;font-size:14px}.businessSection{padding:88px clamp(20px,5vw,72px);background:var(--board);border-top:1px solid var(--edge)}.sectionHeadingDark{max-width:860px}.sectionHeadingDark>p:last-child{color:var(--dust)}.businessGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:38px}.businessCard{height:320px;position:relative;border:1px solid var(--edge);border-radius:15px;overflow:hidden;background:var(--edge)}.businessCard img{object-fit:cover;transition:transform .5s ease}.businessCard:hover img{transform:scale(1.035)}.businessCard:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,rgba(14,10,5,.95))}.businessOverlay{position:absolute;z-index:2;inset:auto 17px 16px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:4px}.businessOverlay h3{grid-column:1;font-family:var(--font-display);font-size:20px}.businessOverlay p{grid-column:1;color:#c3b49f;font-size:11px;margin:0}.businessOverlay svg{grid-column:2;grid-row:1/3;color:var(--amber)}.workflowSection{padding-top:86px}.steps{display:grid;grid-template-columns:repeat(4,1fr);margin-top:46px;border-top:2px solid #d0b98f}.steps article{padding:26px 25px 0 0;position:relative}.steps article:before{content:"";position:absolute;top:-8px;left:0;width:14px;height:14px;border-radius:50%;background:#f6efe3;border:3px solid #d38b1e}.steps span{font-family:var(--font-mono);color:#9a5a0c;font-size:12px}.steps h3{font-family:var(--font-display);font-size:19px;margin:12px 0 8px}.steps p{color:#6f604b;line-height:1.55;font-size:13px}.consoleShowcase{padding:96px clamp(20px,5vw,72px);display:grid;grid-template-columns:minmax(280px,.7fr) minmax(580px,1.3fr);gap:58px;align-items:center;background:linear-gradient(125deg,#0d0905,#171009)}.consolePitch>p:nth-of-type(2){color:var(--dust);line-height:1.55;font-size:16px;max-width:500px}.consolePitch ul{list-style:none;margin:25px 0;padding:0;display:grid;gap:10px;color:var(--dust);font-size:13px}.consolePitch li{display:flex;gap:8px;align-items:center}.consolePitch li svg{color:var(--amber)}.consoleFrame{transform:perspective(1200px) rotateY(-2deg);filter:drop-shadow(0 30px 55px rgba(0,0,0,.36))}.consoleFrame .consoleMock{min-height:410px}.customerSection{background:#f6efe3;color:#241b0f;padding:92px clamp(20px,5vw,72px);display:grid;grid-template-columns:.8fr 1.2fr;gap:84px;align-items:center}.customerVisual{height:530px;display:grid;place-items:center;position:relative}.customerVisual .phone{transform:scale(1.02);z-index:2;box-shadow:0 32px 80px rgba(57,39,16,.18)}.customerGlow{position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,#f0c979,transparent 68%)}.customerCopy>p:nth-of-type(2){color:#6f604b;font-size:17px;line-height:1.55;max-width:650px}.customerPoints{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:28px 0}.customerPoints span{display:flex;gap:8px;align-items:center;padding:13px 0;border-bottom:1px solid #dac9ad;font-weight:700;font-size:13px}.textLink{color:#7e4707;text-decoration:none;font-weight:900;display:inline-flex;gap:7px;align-items:center}.storySection{display:grid;grid-template-columns:1fr 1fr;min-height:480px;background:#130d08}.storyImage{min-height:480px;position:relative}.storyImage img{object-fit:cover}.storySection blockquote{margin:0;padding:70px;display:flex;flex-direction:column;justify-content:center}.storySection blockquote p{font-family:var(--font-display);font-size:clamp(28px,3vw,43px);line-height:1.1;margin:0}.storySection blockquote footer{font-family:var(--font-mono);color:var(--amber);font-size:12px;margin-top:22px}.ctaSection{position:relative;min-height:470px;display:grid;place-items:center;text-align:center;padding:80px 20px;isolation:isolate}.ctaSection:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,10,5,.93),rgba(14,10,5,.78),rgba(14,10,5,.93));z-index:-1}.ctaArt{object-fit:cover;z-index:-2}.ctaSection>div{max-width:900px}.ctaSection .heroActions{justify-content:center}.footer{padding:42px clamp(20px,5vw,72px);display:grid;grid-template-columns:auto 1fr auto auto;gap:28px;align-items:center;border-top:1px solid var(--edge)}.footer p,.footer small{color:var(--dust);font-size:12px}.footer nav{display:flex;gap:18px}
+@media(max-width:1050px){.nav{display:none}.header{grid-template-columns:1fr auto}.hero{grid-template-columns:1fr;min-height:auto;padding-top:54px}.heroCopy{max-width:780px}.heroVisual{height:570px;max-width:820px;width:100%;margin:0 auto}.proofStrip{grid-template-columns:repeat(2,1fr);padding:14px 20px;gap:12px}.proofStrip span{border:0}.businessGrid{grid-template-columns:repeat(2,1fr)}.consoleShowcase{grid-template-columns:1fr}.consoleFrame{transform:none}.customerSection{grid-template-columns:.75fr 1.25fr}.footer{grid-template-columns:1fr 1fr}.footer nav{justify-content:end}}
+@media(max-width:700px){.header{height:66px;padding:0 16px}.headerActions .login{display:none}.hero{padding:44px 16px 48px}.hero h1{font-size:45px}.heroText{font-size:16px}.heroProof{display:grid}.heroVisual{height:470px}.photoPanel{inset:0 0 80px 0}.heroConsole{left:-6%;bottom:0;width:88%;transform:scale(.72);transform-origin:bottom left}.heroPhone{right:-15px;bottom:-6px;transform:scale(.58)}.stamp{width:100px;height:100px;font-size:8px;right:4px}.proofStrip{grid-template-columns:1fr 1fr;font-size:11px}.lightSection,.workflowSection,.businessSection,.consoleShowcase,.customerSection{padding:68px 16px}.capabilityGrid{grid-template-columns:1fr}.capability{min-height:0}.businessGrid{grid-template-columns:1fr}.businessCard{height:260px}.steps{grid-template-columns:1fr;margin-top:32px;border-top:0}.steps article{padding:18px 0;border-top:1px solid #d0b98f}.steps article:before{display:none}.consoleShowcase{gap:35px}.consoleFrame{overflow:auto}.consoleFrame .consoleMock{min-width:650px}.customerSection{grid-template-columns:1fr;gap:26px}.customerVisual{height:455px;order:2}.customerCopy{order:1}.storySection{grid-template-columns:1fr}.storyImage{min-height:330px}.storySection blockquote{padding:48px 18px}.ctaSection{min-height:420px}.footer{grid-template-columns:1fr;gap:12px}.footer nav{justify-content:flex-start;flex-wrap:wrap}.headerActions .primaryButton{padding:10px 13px}.brand{font-size:18px}}
+
+/* ---------------------------------------------------------------------------
+ * Sub-page intro + vertical detail cards — added for the multi-page site
+ * (/product, /for-businesses, /how-it-works). Kept in this same module so
+ * every marketing page shares one token-pinned stylesheet.
+ * ------------------------------------------------------------------------- */
+
+.pageIntro {
+  position: relative;
+  padding: 64px clamp(20px, 5vw, 72px) 56px;
+  background: radial-gradient(circle at 12% 0%, rgba(232, 160, 32, 0.1), transparent 40%), linear-gradient(180deg, var(--ink), #100b06);
+  border-bottom: 1px solid var(--edge);
+}
+
+.pageIntro .eyebrow {
+  margin-bottom: 14px;
+}
+
+.pageIntro h1 {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4.4vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 760px;
+  margin: 0;
+}
+
+.pageIntroText {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--dust);
+  max-width: 620px;
+  margin: 18px 0 0;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dust);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+
+.backLink:hover {
+  color: var(--chalk);
+}
+
+/* Home's short teaser row into the three sub-pages */
+.teaserGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 38px;
+}
+
+.teaserCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px;
+  border: 1px solid #d9cbb5;
+  border-radius: 16px;
+  background: #fffdf8;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.teaserCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--amber);
+}
+
+.teaserCard h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  margin: 0;
+}
+
+.teaserCard p {
+  color: #6f604b;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+}
+
+.teaserLink {
+  color: #7e4707;
+  font-weight: 900;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* /for-businesses vertical detail cards — same paper section, more room for
+ * text than the homepage's image-overlay businessGrid cards. */
+.verticalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 42px;
+}
+
+.verticalCard {
+  padding: 30px;
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  background: var(--board);
+}
+
+.verticalCard h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  margin: 16px 0 8px;
+}
+
+.verticalCard > p {
+  color: var(--dust);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+
+.verticalCard ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.verticalCard li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--chalk);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.verticalCard li svg {
+  color: var(--veld);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .teaserGrid {
+    grid-template-columns: 1fr;
+  }
+  .verticalGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .pageIntro {
+    padding: 44px 16px 40px;
+  }
+}
+
+/* Continuous slow-sliding strip of every real business category/sub-type —
+ * sits between the proof strip and "Explore the platform." Dark, matching
+ * the proof strip immediately above it, so the hero's dark run continues
+ * one beat longer before the page turns to the light "Explore" section. */
+.marqueeSection {
+  overflow: hidden;
+  padding: 20px 0;
+  background: #120c07;
+  border-block: 1px solid var(--edge);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: marqueeSlide 38s linear infinite;
+}
+
+.marqueeGroup {
+  display: flex;
+  gap: 12px;
+  padding-right: 12px;
+  flex-shrink: 0;
+}
+
+.marqueeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  color: var(--dust);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--board) 60%, transparent);
+}
+
+.marqueeChip svg {
+  color: var(--amber);
+  flex-shrink: 0;
+}
+
+@keyframes marqueeSlide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.diptych {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  height: clamp(220px, 32vw, 420px);
+  margin: 0 clamp(20px, 5vw, 72px);
+}
+
+.diptychPanel {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  background: var(--board);
+}
+
+.diptychPanel:first-child {
+  border-radius: 20px 6px 6px 20px;
+}
+
+.diptychPanel:last-child {
+  border-radius: 6px 20px 20px 6px;
+}
+
+.diptychPanel:after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 48%;
+  background: linear-gradient(transparent, rgba(14, 10, 5, 0.88));
+  pointer-events: none;
+}
+
+.diptychGap {
+  width: 4px;
+  flex-shrink: 0;
+  margin: 0 3px;
+  border-radius: 4px;
+  background: var(--amber);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--amber) 55%, transparent);
+}
+
+.diptychLabels {
+  position: absolute;
+  z-index: 2;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.diptychChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(14, 10, 5, 0.55);
+  border: 1px solid rgba(245, 239, 230, 0.22);
+  backdrop-filter: blur(6px);
+  color: var(--chalk);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.diptychChip svg {
+  color: var(--amber);
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .diptych {
+    margin: 0 16px;
+    height: auto;
+    flex-direction: column;
+  }
+  .diptychPanel {
+    /* Base rule's flex:1 (flex-basis:0%) wins over this height in a
+       column flex container with no definite own height, collapsing the
+       panel to ~0px — flex:none makes the explicit height authoritative. */
+    flex: none;
+    height: 220px;
+  }
+  .diptychPanel:first-child {
+    border-radius: 16px 16px 6px 6px;
+  }
+  .diptychPanel:last-child {
+    border-radius: 6px 6px 16px 16px;
+  }
+  .diptychGap {
+    width: auto;
+    height: 4px;
+    margin: 3px 0;
+  }
+}
+
+@media (max-width: 700px) {
+  /* consoleMock's fixed 142px nav leaves too little room for 3 metric
+     tiles side by side on a narrow card — the 3rd tile (always
+     "Customers" across every vertical, see vertical-demo-data.ts) was
+     getting clipped by consoleMock's own overflow:hidden. Drop to 2
+     columns and let the 3rd tile take the full-width row below. */
+  .metricGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metricGrid > div:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Homepage-only teaser row of vertical icon chips — visual variety
+ * pointing at /for-businesses' full interactive demo, without a second
+ * working switcher to keep in sync on the homepage itself. */
+.verticalTeaserRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 -6px;
+}
+
+.verticalTeaserChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d9cbb5;
+  color: #6f604b;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.verticalTeaserChip:hover {
+  border-color: #9a5a0c;
+  color: #241b0f;
+}

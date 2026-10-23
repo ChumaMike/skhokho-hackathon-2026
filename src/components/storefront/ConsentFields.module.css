@@ -1,0 +1,13 @@
+/* Always rendered inside StorefrontView's .themeScope wrapper (product-order
+   and service-booking forms only), so this reads --store-page-fg directly
+   rather than needing a themeScope-scoped override like the shared
+   .item/.itemName classes in StorefrontView.module.css do. */
+.consentRow {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--store-page-fg);
+  margin: 2px 0;
+}

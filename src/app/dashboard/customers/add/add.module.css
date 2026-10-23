@@ -1,0 +1,27 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 4px 0 8px;
+}
+
+.sub {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 20px;
+}
+
+.consentRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin: 10px 0;
+}
+
+.cancel {
+  display: inline-block;
+  color: var(--dust);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+}

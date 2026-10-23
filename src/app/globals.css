@@ -1,0 +1,645 @@
+/*
+ * Design tokens — Skhokho Platform
+ * Source of truth: docs/DESIGN.md ("Warm near-black ground with amber —
+ * a shopfront at dusk"). Do not add colours outside this palette.
+ *
+ * Tailwind v4 + a shadcn/ui-style component kit were added on top of this
+ * palette (not instead of it) so ported visual patterns from skhokho-labs
+ * (kente-strip dividers, adinkra backgrounds, card hover-lift, gradient
+ * text) could be reused without reintroducing skhokho-labs' own gold/fire/
+ * green brand colours — one of which (#1DB954) this file's own palette
+ * explicitly bans below. Every Tailwind utility and shadcn semantic
+ * variable resolves back to the eight tokens in the table in DESIGN.md.
+ */
+@import "tailwindcss";
+
+@theme {
+  --color-ink: var(--ink);
+  --color-board: var(--board);
+  --color-edge: var(--edge);
+  --color-amber: var(--amber);
+  --color-veld: var(--veld);
+  --color-oxide: var(--oxide);
+  --color-chalk: var(--chalk);
+  --color-dust: var(--dust);
+
+  --color-background: var(--ink);
+  --color-foreground: var(--chalk);
+  --color-card: var(--board);
+  --color-card-foreground: var(--chalk);
+  --color-popover: var(--board);
+  --color-popover-foreground: var(--chalk);
+  --color-primary: var(--amber);
+  --color-primary-foreground: var(--ink);
+  --color-secondary: var(--edge);
+  --color-secondary-foreground: var(--chalk);
+  --color-muted: var(--board);
+  --color-muted-foreground: var(--dust);
+  --color-accent: var(--edge);
+  --color-accent-foreground: var(--chalk);
+  --color-destructive: var(--oxide);
+  --color-success: var(--veld);
+  --color-border: var(--edge);
+  --color-input: var(--edge);
+  --color-ring: var(--amber);
+
+  --font-heading: var(--font-display);
+  --font-sans: var(--font-body);
+
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+}
+
+:root {
+  /* Colour — dark is the default brand experience (DESIGN.md's "shopfront
+   * at dusk"); light below is a genuine accessible alternative, not a
+   * fallback drawn from the same values. Every component already
+   * references these var() names directly, so overriding them here (for
+   * light and system-light below) reaches the whole app with zero
+   * per-component changes. */
+  --ink: #0e0a05; /* page ground */
+  --board: #171009; /* cards, raised surfaces */
+  --edge: #2e2011; /* borders, empty stamp slots */
+  --amber: #e8a020; /* primary action, filled stamps, brand */
+  --veld: #5b8c3a; /* reward ready, success */
+  --oxide: #c8452f; /* destructive, lapsed customers, errors */
+  --chalk: #f5efe6; /* primary text */
+  --dust: #8a7b68; /* secondary text, labels */
+
+  /* Type stack — next/font/google variables are attached to <html> in layout.tsx */
+  --font-display: var(--font-archivo-black), "Archivo Black", system-ui, sans-serif;
+  --font-body: var(--font-archivo), Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-space-mono), "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale: 12 / 14 / 16 / 20 / 28 / 40 */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+
+  /* Layout */
+  --column-max: 520px;
+  --radius-card: 14px;
+  --touch-min: 44px;
+  --bottom-bar-height: 76px;
+  /* Business Console desktop sidebar width — read by BusinessConsoleNav's
+   * fixed `.sidebar` and by the `.shell` padding-reservation rule below, so
+   * the two can never drift out of sync. */
+  --console-sidebar-width: 260px;
+}
+
+/*
+ * Light mode — a real accessible alternative, not a lighter tint of the
+ * dark palette. Ink/board/edge/chalk/dust invert role (dark text on a warm
+ * paper ground); amber/veld/oxide get darkened just enough to clear AA
+ * contrast as text on that lighter ground (the raw dark-mode hues fail
+ * WCAG 4.5:1 on a light background), while staying recognisably the same
+ * brand hues. Applies for an explicit "system" choice when the OS itself
+ * prefers light (guarded so an explicit dark choice always wins), and for
+ * an explicit "light" choice regardless of OS.
+ */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ink: #fbf6ec;
+    --board: #fffdf8;
+    --edge: #e3d4b4;
+    --amber: #a8650c;
+    --veld: #3f6b34;
+    --oxide: #9a3b25;
+    --chalk: #241b0f;
+    --dust: #6e5d42;
+  }
+}
+
+:root[data-theme="light"] {
+  --ink: #fbf6ec;
+  --board: #fffdf8;
+  --edge: #e3d4b4;
+  --amber: #a8650c;
+  --veld: #3f6b34;
+  --oxide: #9a3b25;
+  --chalk: #241b0f;
+  --dust: #6e5d42;
+}
+
+/*
+ * Tonal status surfaces — a deliberate, documented extension to the eight
+ * tokens above, added for the Connected UI work.
+ *
+ * DESIGN.md's "do not add colours outside this palette" exists to stop
+ * ad-hoc hexes drifting in, not to force every status chip to be amber. The
+ * eight tokens carry one success, one error and one action colour, which
+ * cannot express a queue that runs new -> preparing -> ready -> complete,
+ * nor tell "2 pending invites" apart from "3 deliveries failed". Rather
+ * than let each component invent its own tints (which is what the imported
+ * pack did — fifteen loose hexes), the vocabulary is named once here.
+ *
+ * These are light chip surfaces by design: they sit on the warm console
+ * ground AND as light chips on the dark staff screens, so they are pinned
+ * literals rather than theme-flipping tokens. Every -fg on its -bg clears
+ * WCAG AA (measured 5.6:1 to 7.3:1).
+ *
+ * `critical` is only 1.18:1 away from `warning` as a fill, so it carries a
+ * border as well — severity must never depend on hue alone (same rule as
+ * the interview's selected chips).
+ */
+:root {
+  --tone-new-bg: #fff0c5;
+  --tone-new-fg: #6b4810;
+  --tone-preparing-bg: #f7e1c7;
+  --tone-preparing-fg: #7d4d19;
+  --tone-ready-bg: #dfebd8;
+  --tone-ready-fg: #2c5228;
+  --tone-warning-bg: #f8ded7;
+  --tone-warning-fg: #8d3529;
+  --tone-critical-bg: #f3c9c0;
+  --tone-critical-fg: #6f2718;
+  --tone-critical-edge: #b4543c;
+  --tone-neutral-bg: #f4ebdc;
+  --tone-neutral-fg: #5c5040;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ink);
+  color: var(--chalk);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+input,
+select,
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 400; /* Archivo Black is already heavy at 400 */
+  margin: 0;
+}
+
+/* Visible keyboard focus rings everywhere — quality floor in DESIGN.md */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    /* Delays must be reset too, not just durations. The hero stamp discs are
+       staggered with `animation-delay` up to 360ms (DemoStampCard.module.css);
+       without this they still appear one by one for a reader who asked for
+       reduced motion — each blink instant, but the sequence intact, which is
+       exactly the effect they opted out of. */
+    animation-delay: 0.001ms !important;
+    transition-delay: 0.001ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Shared layout primitives
+ * Single column, ≤520px, centred — "a phone app that happens to run in a
+ * browser" (DESIGN.md, Layout). Plain global classes rather than a CSS Module
+ * per page, since every tenant-facing screen follows the same shell.
+ * ------------------------------------------------------------------------- */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Paint the ground and re-anchor inherited text from `.shell`'s OWN token
+   * values, rather than leaving both to `body`. On a normal page these
+   * resolve identically to body's and nothing changes - but the Business
+   * Console re-pins the warm light palette further down *on this very
+   * element*, and a var() is substituted where it is declared, not where it
+   * is inherited. Without these two lines that re-pin reached only rules
+   * which re-declare a property (`.card`'s `background: var(--board)` turned
+   * white) while everything inheriting `color` still carried body's
+   * dark-theme near-white - white text on white cards - and any rule that
+   * did re-declare `color: var(--chalk)` painted near-black text onto the
+   * still-dark `body` ground. Declaring them here means the single console
+   * re-pin below re-themes ground, text and components together. Same
+   * technique as connected-shopfront's `.page` and AuthShell's `.shell`. */
+  background: var(--ink);
+  color: var(--chalk);
+}
+
+.column {
+  width: 100%;
+  max-width: var(--column-max);
+  margin: 0 auto;
+  padding: 24px 16px calc(var(--bottom-bar-height) + 24px);
+  flex: 1;
+}
+
+/*
+ * Business Console desktop sidebar reservation. Scoped entirely by
+ * `:has()` to pages that actually render BusinessConsoleNav's fixed
+ * sidebar (its `console-sidebar-anchor` marker) — every /dashboard/*
+ * console page except /dashboard/preview, which deliberately renders the
+ * full-width storefront preview with no console chrome. `.column`'s own
+ * `margin: 0 auto` then centres the familiar narrow column within the
+ * remaining space, so the mobile-first "phone app that happens to run in
+ * a browser" layout (see this file's own header comment) is preserved
+ * even at desktop widths — just with a persistent sidebar to its left,
+ * rather than the whole site becoming a wide desktop layout.
+ */
+@media (min-width: 900px) {
+  body:has(.console-sidebar-anchor) .shell {
+    padding-left: var(--console-sidebar-width);
+  }
+}
+
+/*
+ * Business Console content — warm "chalk workspace" admin look (Connected
+ * System V2 direction), pinned regardless of the visitor's light/dark
+ * theme preference so the console reads consistently for every owner/
+ * manager. Scoped to `.shell` only: BusinessConsoleNav's sidebar/drawer/
+ * mobile-bar re-pin the dark values locally (see BusinessConsoleNav.module.css)
+ * so the chrome stays dark even though it's a DOM descendant of `.shell`.
+ * Every existing `.card`/`.btn`/`.input` etc. already reads these vars, so
+ * this single rule re-themes the whole console with no other CSS changes.
+ */
+body:has(.console-sidebar-anchor) .shell {
+  --ink: #fbf6ec;
+  --board: #fffdf8;
+  --edge: #e3d4b4;
+  --amber: #a8650c;
+  --veld: #3f6b34;
+  --oxide: #9a3b25;
+  --chalk: #241b0f;
+  --dust: #6e5d42;
+}
+
+/* Console pages deliberately kept `.column` at phone-width historically —
+ * "the phone app that happens to run in a browser" held for the whole
+ * product before this redesign. Phase 2 makes the console desktop-first
+ * admin software by design (DESIGN.md's "Surfaces" section), so its
+ * content column widens like the marketing `.column.wide` does, without
+ * every console page needing to opt in individually. */
+@media (min-width: 1024px) {
+  body:has(.console-sidebar-anchor) .column {
+    max-width: 1440px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Console page scaffolding for the Connected layout — chrome (nav + identity)
+ * in a centred column, then a full-width canvas beneath it.
+ *
+ * Global rather than per-route CSS Modules because three routes need the
+ * identical pair, and because `.consoleChrome` exists only to be `.column`
+ * without `flex: 1`: as a flex child of `.shell` that grow would absorb every
+ * remaining pixel of height and push the canvas below the fold.
+ * ------------------------------------------------------------------------- */
+.consoleChrome {
+  width: 100%;
+  max-width: var(--column-max);
+  margin: 0 auto;
+  padding: 24px 16px 0;
+}
+
+.consoleCanvas {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * Staff workspaces (Kitchen, Counter, Driver) stay on the dark ground while
+ * the owner console is warm paper — the Connected direction's split between
+ * "software you run a business in" and "a screen you work a shift on". Dark
+ * also suits the rooms these live in: a kitchen tablet at night, a phone in a
+ * car.
+ *
+ * Re-declares `background` and `color` alongside the tokens for the reason
+ * spelled out on `.shell` above: a var() resolves where it is declared, so
+ * pinning alone would leave inherited text on the console's near-black.
+ *
+ * The selector has to out-specify `body:has(.console-sidebar-anchor) .shell`,
+ * which is what pins the light console palette on this very element.
+ */
+body:has(.console-sidebar-anchor) .shell.staffSurface,
+.shell.staffSurface {
+  --ink: #0e0a05;
+  --board: #171009;
+  --edge: #2e2011;
+  --amber: #e8a020;
+  --veld: #5b8c3a;
+  --oxide: #c8452f;
+  --chalk: #f5efe6;
+  --dust: #8a7b68;
+  background: var(--ink);
+  color: var(--chalk);
+}
+
+/* The owner console is desktop admin software, so its canvas gets real width
+ * rather than the phone-width column the customer-facing screens keep. */
+@media (min-width: 1024px) {
+  body:has(.console-sidebar-anchor) .consoleChrome {
+    max-width: 1440px;
+  }
+}
+
+.eyebrow {
+  display: block;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 0 0 8px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Cards: 14px radius, 1px edge border, no drop shadow (OLED + battery) */
+.card {
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-card);
+}
+
+/* Forms */
+.field {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--dust);
+  margin-bottom: 6px;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: var(--board);
+  color: var(--chalk);
+  font-size: var(--text-base);
+}
+
+.input::placeholder {
+  color: var(--dust);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-min);
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btnPrimary {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+.btnSecondary {
+  background: transparent;
+  color: var(--chalk);
+  border-color: var(--edge);
+}
+
+.btnBlock {
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+ * Desktop hybrid layout — opt-in via `.wide` alongside `.column`/
+ * `.bottomBarInner`. Marketing pages (landing, showcase) use it to get a
+ * real desktop layout instead of the phone-width column stretched onto a
+ * big screen. App/form pages (login, join, dashboard, r/[slug]) deliberately
+ * don't opt in — DESIGN.md's "phone app that happens to run in a browser"
+ * still holds for the actual in-hand product UI.
+ * ------------------------------------------------------------------------- */
+@media (min-width: 860px) {
+  /* 960px read as a phone-width column stretched a little, not a real
+   * desktop marketing page, once the headline scale actually matched
+   * skhokho-labs' — widened alongside that fix, not on its own. */
+  .column.wide {
+    max-width: 1280px;
+  }
+
+  .bottomBarInner.wide {
+    max-width: 1280px;
+  }
+}
+
+/* Fixed bottom action bar — the primary action of the current screen,
+ * thumb-reachable, not at the top (DESIGN.md, Layout). */
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--ink) 65%, transparent);
+}
+
+.bottomBarInner {
+  width: 100%;
+  max-width: var(--column-max);
+}
+
+/* Visually hidden but still announced by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Banners */
+.errorBanner,
+.successBanner {
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: var(--text-sm);
+  margin-bottom: 16px;
+}
+
+.errorBanner {
+  background: rgba(200, 69, 47, 0.12);
+  border: 1px solid var(--oxide);
+  color: var(--chalk);
+}
+
+.successBanner {
+  background: rgba(91, 140, 58, 0.16);
+  border: 1px solid var(--veld);
+  color: var(--chalk);
+}
+
+/* ---------------------------------------------------------------------------
+ * Visual pattern language — ported from skhokho-labs, recoloured to this
+ * palette. "Hand-painted enamel signage" (DESIGN.md) applied to skhokho-labs'
+ * pattern shapes rather than its brand hues. Used sparingly, per DESIGN.md's
+ * "spend the boldness on the stamp card; everything else stays quiet."
+ * ------------------------------------------------------------------------- */
+
+/* Section-divider strip (was skhokho-labs' gold/fire/green kente-strip) */
+.kente-strip {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--amber) 0 20px, transparent 20px 24px,
+    var(--oxide) 24px 44px, transparent 44px 48px,
+    var(--veld) 48px 68px, transparent 68px 72px
+  );
+  opacity: 0.5;
+}
+
+/* Gradient text fill, amber → oxide (was gold → fire) */
+.text-grad-amber {
+  background: linear-gradient(135deg, var(--amber), var(--oxide));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Adinkra-style geometric background texture, single-tone amber */
+.adinkra-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='40' cy='40' r='28' fill='none' stroke='%23E8A020' stroke-width='1'/%3E%3Ccircle cx='40' cy='40' r='14' fill='none' stroke='%23E8A020' stroke-width='0.7'/%3E%3Cline x1='12' y1='40' x2='68' y2='40' stroke='%23E8A020' stroke-width='0.6'/%3E%3Cline x1='40' y1='12' x2='40' y2='68' stroke='%23E8A020' stroke-width='0.6'/%3E%3Cline x1='20' y1='20' x2='60' y2='60' stroke='%23E8A020' stroke-width='0.4'/%3E%3Cline x1='60' y1='20' x2='20' y2='60' stroke='%23E8A020' stroke-width='0.4'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+/* Film-grain overlay — colour-agnostic, ported as-is */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Stat card — top accent bar in amber→oxide */
+.stat-card {
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  padding: 28px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--oxide), var(--amber));
+}
+
+/* Testimonial card — left accent bar in amber */
+.testi-card {
+  background: var(--board);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--amber);
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+  transition: transform 0.2s;
+}
+.testi-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Hover-lift, shared by "how it works" steps, business-type cards, spotlight
+ * cards — one interaction pattern, several call sites. */
+.hiw-step,
+.biz-card,
+.spotlight-card {
+  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+}
+.hiw-step:hover,
+.biz-card:hover,
+.spotlight-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--amber) !important;
+}
+.biz-card:hover {
+  background: rgba(232, 160, 32, 0.06) !important;
+}
+
+/* Scroll-reveal utility, driven by an IntersectionObserver hook (ported
+ * alongside as useRevealOnScroll) */
+.reveal-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-section.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testi-card,
+  .hiw-step,
+  .biz-card,
+  .spotlight-card {
+    transition: none;
+  }
+  .reveal-section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

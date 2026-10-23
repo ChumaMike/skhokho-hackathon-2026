@@ -1,0 +1,159 @@
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 4px 0 8px;
+}
+
+.sub {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 20px;
+}
+
+.section {
+  margin: 24px 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  margin: 0 0 10px;
+}
+
+.recList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recList li {
+  padding: 12px 14px;
+}
+
+.infoLine {
+  font-weight: 600;
+  color: var(--chalk);
+  margin: 0 0 4px;
+}
+
+.infoSub {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 8px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Storefront Overview (§5) — status header, "manage" cards
+ * ------------------------------------------------------------------------- */
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--amber);
+}
+
+.statusDotLive {
+  background: var(--veld);
+}
+
+.statusDotOff {
+  background: var(--oxide);
+}
+
+.statusLabel {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.publicUrl {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--dust);
+  word-break: break-all;
+  margin: 0 0 14px;
+}
+
+.actionsRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.manageGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.manageCard {
+  display: block;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.manageCardTitle {
+  display: block;
+  font-weight: 600;
+  color: var(--chalk);
+  margin-bottom: 2px;
+}
+
+.manageCardSub {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--dust);
+}
+
+/* ---------------------------------------------------------------------------
+ * Business information (§8) — PUBLIC vs OPERATIONAL ONLY field grouping
+ * ------------------------------------------------------------------------- */
+
+.fieldGroupIntro {
+  color: var(--dust);
+  font-size: var(--text-sm);
+  margin: 0 0 14px;
+}
+
+.fieldHint {
+  display: block;
+  color: var(--dust);
+  font-size: var(--text-xs);
+  margin: -12px 0 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 32px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row .field {
+  flex: 1;
+}
+
+.currentLogo {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--edge);
+  margin-bottom: 8px;
+}
