@@ -10,15 +10,15 @@ payments that settle straight into the business's own account. Built in Dube,
 Soweto, and live with real township businesses.
 
 - Live platform: https://skhokho.sgdataint.co.za
-- Judges' demo: Demo account details are in the submission deck (Sonke), not in this repository.
+- Judges' demo: The demo account's login is given in the hackathon submission, not in this repository.
 
 ## Built during the hackathon (23–26 October 2026)
 
 Cash-flow Forecast and Funding-Readiness Report: a four-week daily sales forecast from the business's own order history, a print-ready one-page statement a lender can read, and a win-back list of customers predicted to lapse.
 
 Everything else in this repository existed before the hackathon. This snapshot
-was exported from the private sg-os monorepo at commit `788bd23d`
-(2026-10-23); the hackathon commits are the ones dated 23–26 October 2026.
+was exported from the private sg-os monorepo at commit `ee6e8352`
+(2026-10-24); the hackathon commits are the ones dated 23–26 October 2026.
 Daily progress is logged on the team page on Sonke.
 
 ## How it is built

@@ -1,5 +1,6 @@
 "use client";
 
+import { quoteErrorMessage } from "./quote-error-message";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatZAR } from "@/lib/utils";
@@ -85,11 +86,7 @@ export default function BasketView({ businessId, basePath }: { businessId: strin
 
       {quoteState.status === "error" && (
         <div className="errorBanner">
-          {quoteState.code === "CART_EMPTY"
-            ? "Your basket is no longer available."
-            : quoteState.code === "BUSINESS_UNAVAILABLE" || quoteState.code === "ORDERS_UNAVAILABLE"
-              ? "This business is not currently accepting orders."
-              : "Could not load your basket. Check your connection and try again."}
+          {quoteErrorMessage(quoteState.code)}
         </div>
       )}
 
